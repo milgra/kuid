@@ -3,7 +3,7 @@
 A modern, minimal ui renderer with html/css based stylimg written in headerless C.
 
 Features :
-- MacOs like smooth kinetic animations
+- MacOS like smooth kinetic animations
 - font animatioms
 - deterministic session record and replay for automated testing
 - gpu or cpu based alpha nblendig
@@ -13,10 +13,10 @@ Usage :
 
 KineticUI is under heavy development, check out projects using KineticUI to see how to use it :
 
-https://github.com/milgra/mmfm
-https://github.com/milgra/vmp
-https://github.com/milgra/sov
-https://github.com/milgra/wcp
+https://github.com/milgra/mmfm  
+https://github.com/milgra/vmp  
+https://github.com/milgra/sov  
+https://github.com/milgra/wcp  
 
 Roadmap :
 
