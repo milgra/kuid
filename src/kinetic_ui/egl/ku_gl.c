@@ -197,7 +197,7 @@ void ku_gl_init(int max_dev_width, int max_dev_height)
 
     if (binsize > value) binsize = value;
 
-    mt_log_info("Texture size will be %i", binsize);
+    mt_log_debug("texture size will be %i", binsize);
 
     kugl.texturesize = binsize;
 
@@ -230,13 +230,11 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 	if (kugl.texturesize != kugl.atlas->width)
 	{
 	    /* resize texture if needed */
-
 	    ku_gl_delete_texture(kugl.texture);
 	    kugl.texture = ku_gl_create_texture(0, kugl.texturesize, kugl.texturesize);
 	}
 
 	/* reset atlas */
-
 	if (kugl.atlas) REL(kugl.atlas);
 	kugl.atlas = ku_gl_atlas_new(kugl.texturesize, kugl.texturesize);
     }
@@ -251,9 +249,10 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
     {
 	ku_view_t* view = views->data[index];
 
-	/* does it fit into the texture atlas? */
+	/* does it have texture? */
 	if (view->texture.bitmap)
 	{
+	    /* does it fit into the texture atlas? */
 	    if (view->texture.bitmap->w < kugl.texturesize &&
 		view->texture.bitmap->h < kugl.texturesize)
 	    {
@@ -270,9 +269,24 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 			if (success < 0)
 			{
 			    /* force reset */
-
 			    mt_log_debug("Texture Atlas Reset\n");
-			    if (force == 0) reset = 1;
+			    if (force == 0)
+			    {
+				reset = 1;
+			    }
+			    else
+			    {
+				/* reset is already forced so the only thing we can do is increase texture size */
+				int texturesize;
+				glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texturesize);
+
+				if (kugl.texturesize < texturesize)
+				{
+				    mt_log_info("Texture size will be %i", kugl.texturesize);
+				    kugl.texturesize = texturesize;
+				    reset            = 1;
+				}
+			    }
 			    break;
 			}
 
@@ -280,7 +294,6 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 		    }
 
 		    /* upload texture */
-
 		    glTexSubImage2D(
 			GL_TEXTURE_2D,
 			0,
@@ -300,7 +313,6 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 		if (force == 0)
 		{
 		    /* increase texture and atlas size to fit texture */
-
 		    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &kugl.texturesize);
 
 		    mt_log_info("Texture size will be %i", kugl.texturesize);
@@ -316,7 +328,6 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /* in case of reset do the whole thing once again with forced reset*/
-
     if (reset == 1) ku_gl_add_textures(views, 1);
 }
 

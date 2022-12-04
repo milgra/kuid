@@ -20,11 +20,13 @@ https://github.com/milgra/wcp
 
 Roadmap :
 
+- increase fault tolerance of css and html parser
+- increase standards compatibility of css and html (type=button, blocks=true non standard stuff)
+- figure out how to use dirty rects with double buffering in ku_renderer_egl
+- update software renderer, cut out dirty rect, implement image zoom
 - test dirty rect handling
-- make dirty rect work on egl dirty rect solutions ( single buffering maybe? )
 - predictable screenshot when video playing
 - use hold gesture during scrolling
-- remove non-standard css and html (type=button, blocks=true)
 - solve last column resize problem
 - select/copy/paste in textfields
 - vh_textinput should seamlessly switch between texture paragraph and glpyh-based paragraph

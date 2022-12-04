@@ -128,7 +128,7 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
     {
 	vh_tbl_body_move(vh->tbody_view, 0, 0);
     }
-    else if (ev.type == KU_EVENT_MMOVE)
+    else if (ev.type == KU_EVENT_MOUSE_MOVE)
     {
 	// show scroll
 	if (vh->scroll_visible == 0)
@@ -155,7 +155,7 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    vh->selected_item = NULL;
 	}
     }
-    else if (ev.type == KU_EVENT_MMOVE_OUT)
+    else if (ev.type == KU_EVENT_MOUSE_MOVE_OUT)
     {
 	// hide scroll
 	if (vh->scroll_visible == 1)
@@ -164,7 +164,7 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    if (vh->tscrl_view) vh_tbl_scrl_hide(vh->tscrl_view);
 	}
     }
-    else if (ev.type == KU_EVENT_MDOWN)
+    else if (ev.type == KU_EVENT_MOUSE_DOWN)
     {
 	if (ev.x > view->frame.global.x + view->frame.global.w - SCROLLBAR)
 	{
@@ -228,7 +228,7 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    }
 	}
     }
-    else if (ev.type == KU_EVENT_MUP)
+    else if (ev.type == KU_EVENT_MOUSE_UP)
     {
 	if (ev.drag)
 	{
@@ -256,12 +256,12 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	}
 	vh->scroll_drag = 0;
     }
-    else if (ev.type == KU_EVENT_KDOWN)
+    else if (ev.type == KU_EVENT_KEY_DOWN)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_DOWN, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
 	if (vh->on_event) (*vh->on_event)(event);
     }
-    else if (ev.type == KU_EVENT_KUP)
+    else if (ev.type == KU_EVENT_KEY_UP)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_UP, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
 	if (vh->on_event) (*vh->on_event)(event);
