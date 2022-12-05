@@ -1291,6 +1291,11 @@ static void keyboard_key(void* data, struct wl_keyboard* wl_keyboard, uint32_t s
 
 	struct itimerspec spec = {0};
 	timerfd_settime(wlc.keyboard.rep_timer_fd, 0, &spec, NULL);
+
+	ku_event_t event = wlc.keyboard.rep_event;
+	event.type       = KU_EVENT_KEY_UP;
+	event.repeat     = 1;
+	(*wlc.update)(event);
     }
 
     /* send key down/up event */

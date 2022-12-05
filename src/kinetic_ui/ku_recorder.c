@@ -68,7 +68,7 @@ void ku_recorder_replay(char* path)
 void ku_recorder_destroy()
 {
     if (kurec.file) fclose(kurec.file);
-    REL(kurec.eventqueue);
+    if (kurec.eventqueue) REL(kurec.eventqueue);
 }
 
 void ku_recorder_update_record(ku_event_t ev)

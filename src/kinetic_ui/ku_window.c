@@ -81,7 +81,7 @@ void ku_window_resize(ku_window_t* window, int width, int height, float scale)
 void ku_window_layout(ku_window_t* window)
 {
     ku_view_layout(window->root, window->scale);
-    ku_view_describe(window->root, 0);
+    /* ku_view_describe(window->root, 0); */
 }
 
 void ku_window_add(ku_window_t* win, ku_view_t* view)

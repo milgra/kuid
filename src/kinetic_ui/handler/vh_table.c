@@ -564,7 +564,25 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .view           = vh->view,
 	    .rowview        = event.rowview,
 	    .ev             = event.ev};
+
 	(*vh->on_event)(tevent);
+
+	if (event.ev.repeat == 1)
+	{
+	    /* TODO hack for repeating scroll over media files, make it graceful */
+	    event.ev.repeat = 0;
+
+	    tevent = (vh_table_event_t){
+		.table          = vh,
+		.id             = VH_TABLE_EVENT_SELECT,
+		.ev             = event.ev,
+		.selected_items = vh->selected_items,
+		.selected_index = vh->selected_index,
+		.view           = vh->view,
+		.rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index)};
+
+	    (*vh->on_event)(tevent);
+	}
     }
 }
 
