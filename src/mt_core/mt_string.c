@@ -148,7 +148,7 @@ mt_vector_t* mt_string_tokenize(char* str, char* del)
 
 void mt_string_describe(void* p, int level)
 {
-    printf("STR: %s\n", (char*) p);
+    printf("STR: %s", (char*) p);
 }
 
 void mt_string_describe_utf(char* str)

@@ -269,7 +269,7 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 			if (success < 0)
 			{
 			    /* force reset */
-			    mt_log_debug("Texture Atlas Reset\n");
+			    mt_log_debug("Texture Atlas Reset");
 			    if (force == 0)
 			    {
 				reset = 1;

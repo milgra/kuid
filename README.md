@@ -20,6 +20,7 @@ https://github.com/milgra/wcp
 
 Roadmap :
 
+- example projects
 - increase fault tolerance of css and html parser
 - increase standards compatibility of css and html (type=button, blocks=true non standard stuff)
 - figure out how to use dirty rects with double buffering in ku_renderer_egl

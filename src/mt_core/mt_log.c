@@ -92,7 +92,7 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
     struct timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
     {
-	fprintf(stderr, "clock_gettime() failed: %s\n", strerror(errno));
+	fprintf(stdout, "clock_gettime() failed: %s\n", strerror(errno));
 	ts.tv_sec  = 0;
 	ts.tv_nsec = 0;
     }
@@ -102,7 +102,7 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
     if (use_colors)
     {
 	fprintf(
-	    stderr,
+	    stdout,
 	    "%s%-5s%s  ",
 	    verbosity_colors[importance],
 	    verbosity_names[importance],
@@ -110,18 +110,18 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
     }
     else
     {
-	fprintf(stderr, "%-5s  ", verbosity_names[importance]);
+	fprintf(stdout, "%-5s  ", verbosity_names[importance]);
     }
 
     va_list args;
     va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
+    vfprintf(stdout, fmt, args);
     va_end(args);
 
     if (use_colors)
     {
 	fprintf(
-	    stderr,
+	    stdout,
 	    "\033[%iG  %.2i:%.2i:%.2i:%.6li %15s : %d%s ",
 	    file_col,
 	    my_tm->tm_hour,
@@ -135,7 +135,7 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
     else
     {
 	fprintf(
-	    stderr,
+	    stdout,
 	    "\033[%iG  %.2i:%.2i:%.2i:%.6li ( %s:%d: )",
 	    file_col,
 	    my_tm->tm_hour,
@@ -146,7 +146,7 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
 	    line);
     }
 
-    fprintf(stderr, "\n");
+    fprintf(stdout, "\n");
 }
 
 void mt_log_set_level(const mt_log_importance importance)

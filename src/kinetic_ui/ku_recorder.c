@@ -101,7 +101,7 @@ void ku_recorder_update_record(ku_event_t ev)
     {
 	/* queue event */
 	void* event = HEAP(ev);
-	VADD(kurec.eventqueue, event);
+	VADDR(kurec.eventqueue, event);
     }
 }
 
