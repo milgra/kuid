@@ -377,6 +377,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 
 	uint32_t pos = mt_vector_index_of_data(vh->selected_items, data);
 
+	// TODO this is duplicated in CONTEXT event, simplify
+
 	if (pos == UINT32_MAX)
 	{
 	    /* reset selected if control is not down */
@@ -442,9 +444,12 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 
 	    uint32_t pos = mt_vector_index_of_data(vh->selected_items, data);
 
+	    // TODO this is duplicated in CONTEXT event, simplify
+
 	    if (pos == UINT32_MAX)
 	    {
 		/* reset selected if control is not down */
+
 		if (!event.ev.ctrl_down)
 		{
 		    mt_vector_reset(vh->selected_items);
@@ -453,20 +458,35 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		    for (int index = 0; index < bvh->items->length; index++)
 		    {
 			ku_view_t* item = bvh->items->data[index];
-			if (item->style.background_color == 0x006600FF)
+
+			textstyle_t style = index % 2 == 0 ? vh->rowastyle : vh->rowbstyle;
+
+			for (int i = 0; i < item->views->length; i++)
 			{
-			    item->style.background_color = 0x000000FF;
-			    ku_view_invalidate_texture(item);
+			    ku_view_t* cellview = item->views->data[i];
+			    tg_text_set_style(cellview, style);
 			}
 		    }
 		}
 
 		VADD(vh->selected_items, data);
 
-		if (event.rowview)
+		for (int i = 0; i < event.rowview->views->length; i++)
 		{
-		    event.rowview->style.background_color = 0x006600FF;
-		    ku_view_invalidate_texture(event.rowview);
+		    ku_view_t* cellview = event.rowview->views->data[i];
+		    tg_text_set_style(cellview, vh->rowsstyle);
+		}
+	    }
+	    else
+	    {
+		VREM(vh->selected_items, data);
+
+		textstyle_t style = event.index % 2 == 0 ? vh->rowastyle : vh->rowbstyle;
+
+		for (int i = 0; i < event.rowview->views->length; i++)
+		{
+		    ku_view_t* cellview = event.rowview->views->data[i];
+		    tg_text_set_style(cellview, style);
 		}
 	    }
 	}

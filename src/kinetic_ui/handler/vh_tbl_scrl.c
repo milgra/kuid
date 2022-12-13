@@ -260,7 +260,8 @@ void vh_tbl_scrl_scroll_h(ku_view_t* view, int x)
 	    float dx = pratio * (hori_max - hori_vis);
 
 	    vh_tbl_body_hjump(vh->tbody_view, -dx);
-	    vh_tbl_head_jump(vh->thead_view, -dx);
+
+	    if (vh->thead_view) vh_tbl_head_jump(vh->thead_view, -dx);
 
 	    ku_rect_t frame = vh->hori_v->frame.local;
 	    frame.w         = view->frame.local.w * sratio;
