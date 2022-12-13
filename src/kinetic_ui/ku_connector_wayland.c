@@ -669,7 +669,7 @@ wl_window_t* ku_wayland_create_window(char* title, int width, int height)
 {
     wl_window_t* info = ku_wayland_create_generic_window(title, width, height, WL_WINDOW_NATIVE);
 
-    wlc.windows[0] = info;
+    wlc.windows[wlc.window_count] = info;
     wlc.window_count += 1;
 
     wl_surface_commit(info->surface);
@@ -689,7 +689,7 @@ wl_window_t* ku_wayland_create_eglwindow(char* title, int width, int height)
 {
     wl_window_t* info = ku_wayland_create_generic_window(title, width, height, WL_WINDOW_EGL);
 
-    wlc.windows[0] = info;
+    wlc.windows[wlc.window_count] = info;
     wlc.window_count += 1;
 
     /* set opaque region */
@@ -840,6 +840,9 @@ void ku_wayland_delete_window(wl_window_t* info)
 	wl_surface_destroy(info->surface);
 	wl_display_roundtrip(wlc.display);
     }
+
+    // TODO replace window array with vector
+    wlc.window_count = 0;
 }
 
 void ku_wayland_show_window(wl_window_t* info)
@@ -909,7 +912,7 @@ wl_window_t* ku_wayland_create_generic_layer(struct monitor_info* monitor, int w
 {
     wl_window_t* info = CAL(sizeof(wl_window_t), NULL, NULL);
 
-    wlc.windows[0] = info;
+    wlc.windows[wlc.window_count] = info;
     wlc.window_count += 1;
 
     info->scale         = monitor->scale;
