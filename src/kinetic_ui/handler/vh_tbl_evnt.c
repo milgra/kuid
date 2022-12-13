@@ -193,6 +193,9 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	{
 	    vh_tbl_body_t* bvh = vh->tbody_view->handler_data;
 
+	    ku_view_t* context_item  = NULL;
+	    int        context_index = -1;
+
 	    for (int index = 0; index < bvh->items->length; index++)
 	    {
 		ku_view_t* item = bvh->items->data[index];
@@ -208,23 +211,47 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 		    {
 			if (ev.button == 1)
 			{
-			    vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_SELECT, .view = view, .rowview = vh->selected_item, .index = bvh->head_index + index, .ev = ev, .userdata = vh->userdata};
+			    vh_tbl_evnt_event_t event = {
+				.id       = VH_TBL_EVENT_SELECT,
+				.view     = view,
+				.rowview  = vh->selected_item,
+				.index    = vh->selected_index,
+				.ev       = ev,
+				.userdata = vh->userdata};
 			    if (vh->on_event) (*vh->on_event)(event);
 			}
 			if (ev.button == 3)
 			{
-			    vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_CONTEXT, .view = view, .rowview = vh->selected_item, .index = bvh->head_index + index, .ev = ev, .userdata = vh->userdata};
-			    if (vh->on_event) (*vh->on_event)(event);
+			    context_item  = vh->selected_item;
+			    context_index = vh->selected_index;
 			}
 		    }
 		    else
 		    {
-			vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_OPEN, .view = view, .rowview = vh->selected_item, .index = bvh->head_index + index, .ev = ev, .userdata = vh->userdata};
+			vh_tbl_evnt_event_t event =
+			    {
+				.id       = VH_TBL_EVENT_OPEN,
+				.view     = view,
+				.rowview  = vh->selected_item,
+				.index    = vh->selected_index,
+				.ev       = ev,
+				.userdata = vh->userdata};
 			if (vh->on_event) (*vh->on_event)(event);
 		    }
 
 		    break;
 		}
+	    }
+	    if (ev.button == 3)
+	    {
+		vh_tbl_evnt_event_t event = {
+		    .id       = VH_TBL_EVENT_CONTEXT,
+		    .view     = view,
+		    .rowview  = context_item,
+		    .index    = context_index,
+		    .ev       = ev,
+		    .userdata = vh->userdata};
+		if (vh->on_event) (*vh->on_event)(event);
 	    }
 	}
     }

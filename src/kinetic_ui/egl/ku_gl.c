@@ -256,57 +256,51 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 	    if (view->texture.bitmap->w < kugl.texturesize &&
 		view->texture.bitmap->h < kugl.texturesize)
 	    {
-		/* do we have to upload it? */
-		if (view->texture.uploaded == 0 || force)
+		ku_gl_atlas_coords_t coords = ku_gl_atlas_get(kugl.atlas, view->id);
+
+		/* did it's size change */
+		if (view->texture.bitmap->w != coords.w || view->texture.bitmap->h != coords.h || force)
 		{
-		    ku_gl_atlas_coords_t coords = ku_gl_atlas_get(kugl.atlas, view->id);
+		    int success = ku_gl_atlas_put(kugl.atlas, view->id, view->texture.bitmap->w, view->texture.bitmap->h);
 
-		    /* did it's size change */
-		    if (view->texture.bitmap->w != coords.w || view->texture.bitmap->h != coords.h || force)
+		    if (success < 0)
 		    {
-			int success = ku_gl_atlas_put(kugl.atlas, view->id, view->texture.bitmap->w, view->texture.bitmap->h);
-
-			if (success < 0)
+			/* force reset */
+			mt_log_debug("Texture Atlas Reset");
+			if (force == 0)
 			{
-			    /* force reset */
-			    mt_log_debug("Texture Atlas Reset");
-			    if (force == 0)
-			    {
-				reset = 1;
-			    }
-			    else
-			    {
-				/* reset is already forced so the only thing we can do is increase texture size */
-				int texturesize;
-				glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texturesize);
-
-				if (kugl.texturesize < texturesize)
-				{
-				    mt_log_info("Texture size will be %i", kugl.texturesize);
-				    kugl.texturesize = texturesize;
-				    reset            = 1;
-				}
-			    }
-			    break;
+			    reset = 1;
 			}
+			else
+			{
+			    /* reset is already forced so the only thing we can do is increase texture size */
+			    int texturesize;
+			    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texturesize);
 
-			coords = ku_gl_atlas_get(kugl.atlas, view->id);
+			    if (kugl.texturesize < texturesize)
+			    {
+				mt_log_info("Texture size will be %i", kugl.texturesize);
+				kugl.texturesize = texturesize;
+				reset            = 1;
+			    }
+			}
+			break;
 		    }
 
-		    /* upload texture */
-		    glTexSubImage2D(
-			GL_TEXTURE_2D,
-			0,
-			coords.x,
-			coords.y,
-			coords.w,
-			coords.h,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			view->texture.bitmap->data);
-
-		    view->texture.uploaded = 1;
+		    coords = ku_gl_atlas_get(kugl.atlas, view->id);
 		}
+
+		/* upload texture */
+		glTexSubImage2D(
+		    GL_TEXTURE_2D,
+		    0,
+		    coords.x,
+		    coords.y,
+		    coords.w,
+		    coords.h,
+		    GL_RGBA,
+		    GL_UNSIGNED_BYTE,
+		    view->texture.bitmap->data);
 	    }
 	    else
 	    {
@@ -316,12 +310,13 @@ void ku_gl_add_textures(mt_vector_t* views, int force)
 		    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &kugl.texturesize);
 
 		    mt_log_info("Texture size will be %i", kugl.texturesize);
+		    break;
 
 		    reset = 1;
 		}
-
-		/* TODO : auto test texture resize */
 	    }
+
+	    /* TODO : auto test texture resize */
 	}
     }
 

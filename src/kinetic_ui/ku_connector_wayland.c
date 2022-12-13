@@ -1538,7 +1538,7 @@ static void ku_wayland_handle_global(
     const char*         interface,
     uint32_t            version)
 {
-    mt_log_debug("handle global : %s, version %u", interface, version);
+    /* mt_log_debug("handle global : %s, version %u", interface, version); */
 
     if (strcmp(interface, wl_compositor_interface.name) == 0)
     {
