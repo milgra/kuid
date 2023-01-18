@@ -150,8 +150,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 		}
 		else
 		{
-		    if (v->handler) (*v->handler)(v, outev);
-		    if (v->blocks_touch) break;
+		    if (v->handler)
+			(*v->handler)(v, outev);
+		    if (v->blocks_touch)
+			break;
 		}
 	    }
 	}
@@ -164,16 +166,20 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->movqueue->data[i];
 	    if (v->needs_touch && v->parent)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
-		if (v->blocks_touch) break;
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_touch)
+		    break;
 	    }
 	}
     }
     else if (ev.type == KU_EVENT_MOUSE_DOWN || ev.type == KU_EVENT_MOUSE_UP)
     {
 	ku_event_t outev = ev;
-	if (ev.type == KU_EVENT_MOUSE_DOWN) outev.type = KU_EVENT_MOUSE_DOWN_OUT;
-	if (ev.type == KU_EVENT_MOUSE_UP) outev.type = KU_EVENT_MOUSE_UP_OUT;
+	if (ev.type == KU_EVENT_MOUSE_DOWN)
+	    outev.type = KU_EVENT_MOUSE_DOWN_OUT;
+	if (ev.type == KU_EVENT_MOUSE_UP)
+	    outev.type = KU_EVENT_MOUSE_UP_OUT;
 
 	if (ev.type == KU_EVENT_MOUSE_DOWN)
 	{
@@ -182,8 +188,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 		ku_view_t* v = win->ptrqueue->data[i];
 		if (v->needs_touch)
 		{
-		    if (v->handler) (*v->handler)(v, outev);
-		    if (v->blocks_touch) break;
+		    if (v->handler)
+			(*v->handler)(v, outev);
+		    if (v->blocks_touch)
+			break;
 		}
 	    }
 
@@ -196,8 +204,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->needs_touch && v->parent)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
-		if (v->blocks_touch) break;
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_touch)
+		    break;
 	    }
 	}
     }
@@ -211,8 +221,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->needs_touch && v->parent)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
-		if (v->blocks_scroll) break;
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_scroll)
+		    break;
 	    }
 	}
     }
@@ -226,8 +238,27 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->needs_touch && v->parent)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
-		if (v->blocks_scroll) break;
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_scroll)
+		    break;
+	    }
+	}
+    }
+    else if (ev.type == KU_EVENT_HOLD)
+    {
+	mt_vector_reset(win->ptrqueue);
+	ku_view_coll_touched(win->root, ev, win->ptrqueue);
+
+	for (int i = win->ptrqueue->length - 1; i > -1; i--)
+	{
+	    ku_view_t* v = win->ptrqueue->data[i];
+	    if (v->needs_touch && v->parent)
+	    {
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_scroll)
+		    break;
 	    }
 	}
     }
@@ -239,7 +270,8 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    {
 		ku_view_t* v = win->focusable->data[0];
 		win->focused = v;
-		if (v->handler) (*v->handler)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
+		if (v->handler)
+		    (*v->handler)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
 		mt_vector_add_unique_data(win->ptrqueue, v);
 	    }
 	    else
@@ -253,7 +285,8 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 		    if (win->focused == v)
 		    {
 			win->focused = NULL;
-			if (v->handler) (*v->handler)(v, (ku_event_t){.type = KU_EVENT_UNFOCUS});
+			if (v->handler)
+			    (*v->handler)(v, (ku_event_t){.type = KU_EVENT_UNFOCUS});
 			mt_vector_rem(win->ptrqueue, v);
 			break;
 		    }
@@ -261,11 +294,13 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 
 		/* focus next in queue */
 		index++;
-		if (index == win->focusable->length) index = 0;
+		if (index == win->focusable->length)
+		    index = 0;
 
 		ku_view_t* v = win->focusable->data[index];
 		win->focused = v;
-		if (v->handler) (*v->handler)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
+		if (v->handler)
+		    (*v->handler)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
 		mt_vector_add_unique_data(win->ptrqueue, v);
 	    }
 	}
@@ -276,8 +311,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 
 	    if (v->needs_key && v->parent)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
-		if (v->blocks_key) break;
+		if (v->handler)
+		    (*v->handler)(v, ev);
+		if (v->blocks_key)
+		    break;
 	    }
 	}
     }
@@ -288,7 +325,8 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->needs_text)
 	    {
-		if (v->handler) (*v->handler)(v, ev);
+		if (v->handler)
+		    (*v->handler)(v, ev);
 		break;
 	    }
 	}

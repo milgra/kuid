@@ -2,6 +2,7 @@
 #define vh_tbl_evnt_h
 
 #include "ku_view.c"
+#include "mt_log.c"
 #include "vh_tbl_body.c"
 #include "vh_tbl_head.c"
 #include "vh_tbl_scrl.c"
@@ -84,36 +85,45 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 		float lft = head->frame.local.x;
 		float rgt = head->frame.local.x + head->frame.local.w;
 
-		vh->sx *= 0.8;
-		vh->sy *= 0.8;
+		vh->sx *= 0.9;
+		vh->sy *= 0.9;
 
 		float dx = vh->sx;
 		float dy = vh->sy;
 
-		if (top > 0.001) dy -= top; // scroll back top item
+		if (top > 0.001)
+		    dy -= top; // scroll back top item
 		else if (bot < view->frame.local.h - 0.001 - SCROLLBAR)
 		{
-		    if (hth > view->frame.local.h - 0.0001 - SCROLLBAR) dy += (view->frame.local.h - SCROLLBAR) - bot; // scroll back bottom item
-		    else dy -= top;                                                                                    // scroll back top item
+		    if (hth > view->frame.local.h - 0.0001 - SCROLLBAR)
+			dy += (view->frame.local.h - SCROLLBAR) - bot; // scroll back bottom item
+		    else
+			dy -= top; // scroll back top item
 		}
 
-		if (lft > 0.001) dx -= lft;
+		if (lft > 0.001)
+		    dx -= lft;
 		else if (rgt < view->frame.local.w - 0.001 - SCROLLBAR)
 		{
-		    if (wth > view->frame.local.w - 0.001 - SCROLLBAR) dx += (view->frame.local.w - SCROLLBAR) - rgt;
-		    else dx -= lft;
+		    if (wth > view->frame.local.w - 0.001 - SCROLLBAR)
+			dx += (view->frame.local.w - SCROLLBAR) - rgt;
+		    else
+			dx -= lft;
 		}
 
 		vh_tbl_body_move(vh->tbody_view, dx, dy);
 
-		if (vh->thead_view) vh_tbl_head_move(vh->thead_view, dx);
-		if (vh->tscrl_view && vh->scroll_visible == 1) vh_tbl_scrl_update(vh->tscrl_view);
+		if (vh->thead_view)
+		    vh_tbl_head_move(vh->thead_view, dx);
+		if (vh->tscrl_view && vh->scroll_visible == 1)
+		    vh_tbl_scrl_update(vh->tscrl_view);
 	    }
 
 	    if (vh->tscrl_view)
 	    {
 		vh_tbl_scrl_t* svh = vh->tscrl_view->handler_data;
-		if (svh->state > 0) vh_tbl_scrl_update(vh->tscrl_view);
+		if (svh->state > 0)
+		    vh_tbl_scrl_update(vh->tscrl_view);
 	    }
 	}
     }
@@ -134,23 +144,27 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	if (vh->scroll_visible == 0)
 	{
 	    vh->scroll_visible = 1;
-	    if (vh->tscrl_view) vh_tbl_scrl_show(vh->tscrl_view);
+	    if (vh->tscrl_view)
+		vh_tbl_scrl_show(vh->tscrl_view);
 	}
 	if (vh->scroll_drag)
 	{
 	    if (ev.x > view->frame.global.x + view->frame.global.w - SCROLLBAR)
 	    {
-		if (vh->tscrl_view) vh_tbl_scrl_scroll_v(vh->tscrl_view, ev.y - vh->scroll_drag_y);
+		if (vh->tscrl_view)
+		    vh_tbl_scrl_scroll_v(vh->tscrl_view, ev.y - vh->scroll_drag_y);
 	    }
 	    if (ev.y > view->frame.global.y + view->frame.global.h - SCROLLBAR)
 	    {
-		if (vh->tscrl_view) vh_tbl_scrl_scroll_h(vh->tscrl_view, ev.x - vh->scroll_drag_x);
+		if (vh->tscrl_view)
+		    vh_tbl_scrl_scroll_h(vh->tscrl_view, ev.x - vh->scroll_drag_x);
 	    }
 	}
 	if (vh->selected_item && ev.drag)
 	{
 	    vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_DRAG, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
-	    if (vh->on_event) (*vh->on_event)(event);
+	    if (vh->on_event)
+		(*vh->on_event)(event);
 
 	    vh->selected_item = NULL;
 	}
@@ -161,7 +175,8 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	if (vh->scroll_visible == 1)
 	{
 	    vh->scroll_visible = 0;
-	    if (vh->tscrl_view) vh_tbl_scrl_hide(vh->tscrl_view);
+	    if (vh->tscrl_view)
+		vh_tbl_scrl_hide(vh->tscrl_view);
 	}
     }
     else if (ev.type == KU_EVENT_MOUSE_DOWN)
@@ -218,7 +233,8 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 				.index    = vh->selected_index,
 				.ev       = ev,
 				.userdata = vh->userdata};
-			    if (vh->on_event) (*vh->on_event)(event);
+			    if (vh->on_event)
+				(*vh->on_event)(event);
 			}
 			if (ev.button == 3)
 			{
@@ -236,7 +252,8 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 				.index    = vh->selected_index,
 				.ev       = ev,
 				.userdata = vh->userdata};
-			if (vh->on_event) (*vh->on_event)(event);
+			if (vh->on_event)
+			    (*vh->on_event)(event);
 		    }
 
 		    break;
@@ -251,7 +268,8 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 		    .index    = context_index,
 		    .ev       = ev,
 		    .userdata = vh->userdata};
-		if (vh->on_event) (*vh->on_event)(event);
+		if (vh->on_event)
+		    (*vh->on_event)(event);
 	    }
 	}
     }
@@ -278,7 +296,8 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 		}
 
 		vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_DROP, .view = view, .rowview = vh->selected_item, .index = bvh->head_index + index, .ev = ev, .userdata = vh->userdata};
-		if (vh->on_event) (*vh->on_event)(event);
+		if (vh->on_event)
+		    (*vh->on_event)(event);
 	    }
 	}
 	vh->scroll_drag = 0;
@@ -286,20 +305,29 @@ void vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
     else if (ev.type == KU_EVENT_KEY_DOWN)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_DOWN, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
-	if (vh->on_event) (*vh->on_event)(event);
+	if (vh->on_event)
+	    (*vh->on_event)(event);
     }
     else if (ev.type == KU_EVENT_KEY_UP)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_UP, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
-	if (vh->on_event) (*vh->on_event)(event);
+	if (vh->on_event)
+	    (*vh->on_event)(event);
     }
     else if (ev.type == KU_EVENT_FOCUS)
     {
-	if (vh->tscrl_view) vh_tbl_scrl_show(vh->tscrl_view);
+	if (vh->tscrl_view)
+	    vh_tbl_scrl_show(vh->tscrl_view);
     }
     else if (ev.type == KU_EVENT_UNFOCUS)
     {
-	if (vh->tscrl_view) vh_tbl_scrl_hide(vh->tscrl_view);
+	if (vh->tscrl_view)
+	    vh_tbl_scrl_hide(vh->tscrl_view);
+    }
+    else if (ev.type == KU_EVENT_HOLD)
+    {
+	vh->sx = 0.1;
+	vh->sy = 0.1;
     }
 }
 

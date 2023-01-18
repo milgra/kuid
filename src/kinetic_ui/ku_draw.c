@@ -22,6 +22,7 @@ void ku_draw_rect(ku_bitmap_t* bm, int sx, int sy, int w, int h, uint32_t color,
 void ku_draw_blend_argb(ku_bitmap_t* bm, int nx, int ny, ku_bitmap_t* nbm);
 void ku_draw_insert(ku_bitmap_t* base, ku_bitmap_t* src, int sx, int sy);
 void ku_draw_insert_argb(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, int sy);
+void ku_draw_insert_rgba(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, int sy);
 void ku_draw_insert_rgb(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, int sy);
 void ku_draw_blend_8(ku_bitmap_t* bm, int nx, int ny, uint32_t color, unsigned char* ndata, int nw, int nh);
 void ku_draw_blend_8_1(ku_bitmap_t* bm, int nx, int ny, uint32_t color, unsigned char* ndata, int nw, int nh);
@@ -580,9 +581,11 @@ void ku_draw_insert_rgb(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, i
 void ku_draw_insert_argb(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, int sy)
 {
     int bx = sx + w;
-    if (bx > base->w) bx = base->w;
+    if (bx > base->w)
+	bx = base->w;
     int by = sy + h;
-    if (by > base->h) by = base->h;
+    if (by > base->h)
+	by = base->h;
 
     uint8_t* sdata = src;        // src data
     uint8_t* bdata = base->data; // base data
@@ -610,18 +613,59 @@ void ku_draw_insert_argb(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, 
     }
 }
 
+void ku_draw_insert_rgba(ku_bitmap_t* base, uint8_t* src, int w, int h, int sx, int sy)
+{
+    int bx = sx + w;
+    if (bx > base->w)
+	bx = base->w;
+    int by = sy + h;
+    if (by > base->h)
+	by = base->h;
+
+    uint8_t* sdata = src;        // src data
+    uint8_t* bdata = base->data; // base data
+
+    for (int y = sy; y < by; y++)
+    {
+	for (int x = sx; x < bx; x++)
+	{
+	    if (x > -1 && y > -1)
+	    {
+		int si = ((y - sy) * w + (x - sx)) * 4; // src index
+		int bi = (y * base->w + x) * 4;         // base index
+
+		uint8_t a = sdata[si];
+		uint8_t r = sdata[si + 1];
+		uint8_t g = sdata[si + 2];
+		uint8_t b = sdata[si + 3];
+
+		bdata[bi]     = r;
+		bdata[bi + 1] = g;
+		bdata[bi + 2] = b;
+		bdata[bi + 3] = a;
+	    }
+	}
+    }
+}
+
 void ku_draw_insert_bitmap(ku_bitmap_t* base, ku_bitmap_t* src, int sx, int sy)
 {
-    if (sx < 0) sx = 0;
-    if (sy < 0) sy = 0;
-    if (sx >= base->w) return;
-    if (sy >= base->h) return;
+    if (sx < 0)
+	sx = 0;
+    if (sy < 0)
+	sy = 0;
+    if (sx >= base->w)
+	return;
+    if (sy >= base->h)
+	return;
 
     int ex = sx + src->w;
     int ey = sy + src->h;
 
-    if (ex >= base->w) ex = base->w;
-    if (ey >= base->h) ey = base->h;
+    if (ex >= base->w)
+	ex = base->w;
+    if (ey >= base->h)
+	ey = base->h;
 
     uint32_t* b = (uint32_t*) base->data;
     uint32_t* s = (uint32_t*) src->data;

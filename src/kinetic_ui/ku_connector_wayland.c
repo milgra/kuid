@@ -991,12 +991,26 @@ void ku_wayland_request_frame(wl_window_t* info)
 
 static void gesture_hold_begin(void* data, struct zwp_pointer_gesture_hold_v1* hold, uint32_t serial, uint32_t time, struct wl_surface* surface, uint32_t fingers)
 {
-    mt_log_debug("hold start");
+    for (int index = 0; index < wlc.window_count; index++)
+    {
+	wl_window_t* window = wlc.windows[index];
+
+	if (window->surface == surface && window->monitor)
+	{
+	    ku_event_t event = init_event();
+	    event.type       = KU_EVENT_HOLD;
+	    event.x          = window->pointer.px;
+	    event.y          = window->pointer.py;
+	    event.ctrl_down  = wlc.keyboard.control;
+	    event.shift_down = wlc.keyboard.shift;
+
+	    (*wlc.update)(event);
+	}
+    }
 }
 
 static void gesture_hold_end(void* data, struct zwp_pointer_gesture_hold_v1* hold, uint32_t serial, uint32_t time, int32_t cancelled)
 {
-    mt_log_debug("hold end");
 }
 
 static const struct zwp_pointer_gesture_hold_v1_listener gesture_hold_listener = {
@@ -1610,7 +1624,8 @@ static void ku_wayland_handle_global(
     }
     else if (strcmp(interface, wl_output_interface.name) == 0)
     {
-	if (wlc.monitor_count >= 16) return;
+	if (wlc.monitor_count >= 16)
+	    return;
 
 	struct monitor_info* monitor = malloc(sizeof(struct monitor_info));
 	memset(monitor->name, 0, MAX_MONITOR_NAME_LEN);
@@ -1651,10 +1666,10 @@ static void ku_wayland_handle_global(
     }
     else if (strcmp(interface, zwp_pointer_gestures_v1_interface.name) == 0)
     {
+	wlc.pointer_manager_version = version;
 	if (version >= 3)
 	{
-	    wlc.pointer_manager_version = version;
-	    wlc.pointer_manager         = wl_registry_bind(registry, name, &zwp_pointer_gestures_v1_interface, 3);
+	    wlc.pointer_manager = wl_registry_bind(registry, name, &zwp_pointer_gestures_v1_interface, 3);
 	}
     }
 }

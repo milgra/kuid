@@ -436,7 +436,7 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
     }
     else if (event.id == VH_TBL_EVENT_CONTEXT)
     {
-	if (event.index > -1)
+	if (event.index > -1 && vh->selected_index != event.index)
 	{
 	    vh->selected_index = event.index;
 
@@ -548,8 +548,10 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 
 	if (event.ev.keycode == XKB_KEY_Down || event.ev.keycode == XKB_KEY_Up)
 	{
-	    if (event.ev.keycode == XKB_KEY_Down) vh_table_select(vh->view, vh->selected_index + 1, event.ev.shift_down);
-	    if (event.ev.keycode == XKB_KEY_Up) vh_table_select(vh->view, vh->selected_index - 1, event.ev.shift_down);
+	    if (event.ev.keycode == XKB_KEY_Down)
+		vh_table_select(vh->view, vh->selected_index + 1, event.ev.shift_down);
+	    if (event.ev.keycode == XKB_KEY_Up)
+		vh_table_select(vh->view, vh->selected_index - 1, event.ev.shift_down);
 
 	    tevent = (vh_table_event_t){
 		.table          = vh,
