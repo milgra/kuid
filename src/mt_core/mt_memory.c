@@ -6,15 +6,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-/* TODO separate unit tests */
+#include <string.h>
 
 #undef MT_MEMORY_DEBUG
 
 #define CAL(X, Y, Z) mt_memory_calloc(X, Y, Z);
 #define RET(X) mt_memory_retain(X)
 #define REL(X) mt_memory_release(X)
-#define HEAP(X) mt_memory_stack_to_heap(sizeof(X), NULL, NULL, (uint8_t*) &X)
+#define HEAP(X) mt_memory_stack_to_heap(sizeof(X), NULL, NULL, (char*) &X)
 
 void*  mt_memory_alloc(size_t size, void (*destructor)(void*), void (*descriptor)(void*, int));
 void*  mt_memory_calloc(size_t size, void (*destructor)(void*), void (*descriptor)(void*, int));
@@ -22,7 +21,7 @@ void*  mt_memory_realloc(void* pointer, size_t size);
 void*  mt_memory_retain(void* pointer);
 char   mt_memory_release(void* pointer);
 size_t mt_memory_retaincount(void* pointer);
-void*  mt_memory_stack_to_heap(size_t size, void (*destructor)(void*), void (*descriptor)(void*, int), uint8_t* data);
+void*  mt_memory_stack_to_heap(size_t size, void (*destructor)(void*), void (*descriptor)(void*, int), char* data);
 void   mt_memory_describe(void* pointer, int level);
 
 #ifdef MT_MEMORY_DEBUG
@@ -33,17 +32,18 @@ void mt_memory_stats();
 
 #if __INCLUDE_LEVEL__ == 0
 
-#include <execinfo.h>
-#include <string.h>
+#ifdef MT_MEMORY_DEBUG
+    #include <execinfo.h>
+#endif
 
 struct mt_memory_head
 {
 #ifdef MT_MEMORY_DEBUG
-    uint32_t index; /* allocation index for debugging/statistics */
+    size_t index; /* allocation index for debugging/statistics */
 #endif
     void (*destructor)(void*);
     void (*descriptor)(void*, int);
-    int32_t retaincount;
+    size_t retaincount;
 };
 
 #ifdef MT_MEMORY_DEBUG
@@ -52,7 +52,7 @@ struct mt_memory_head
     #define MT_MEMORY_DEBUG_INDEX 0      /* head index to stop at error */
 
 struct mt_memory_head* mt_memory_heads[MT_MEMORY_DEBUG_SIZE] = {0};
-static uint32_t        mt_memory_index                       = 1; /* live object counter for debugging */
+static size_t          mt_memory_index                       = 1; /* live object counter for debugging */
 
 void mt_memory_trace(
     char* id, struct mt_memory_head* head)
@@ -73,7 +73,7 @@ void* mt_memory_alloc(
     void (*destructor)(void*),      /* optional destructor */
     void (*descriptor)(void*, int)) /* optional descriptor for describing memory area */
 {
-    uint8_t* bytes = malloc(sizeof(struct mt_memory_head) + size);
+    char* bytes = malloc(sizeof(struct mt_memory_head) + size);
     if (bytes != NULL)
     {
 	struct mt_memory_head* head = (struct mt_memory_head*) bytes;
@@ -85,13 +85,15 @@ void* mt_memory_alloc(
 #ifdef MT_MEMORY_DEBUG
 	head->index                      = mt_memory_index;
 	mt_memory_heads[mt_memory_index] = head;
-	if (head->index == MT_MEMORY_DEBUG_INDEX) mt_memory_trace("ALLOC", head);
+	if (head->index == MT_MEMORY_DEBUG_INDEX)
+	    mt_memory_trace("ALLOC", head);
 	mt_memory_index++;
 #endif
 
 	return bytes + sizeof(struct mt_memory_head);
     }
-    else return NULL;
+    else
+	return NULL;
 }
 
 void* mt_memory_calloc(
@@ -99,7 +101,7 @@ void* mt_memory_calloc(
     void (*destructor)(void*),      /* optional destructor */
     void (*descriptor)(void*, int)) /* optional descriptor for describing memory area */
 {
-    uint8_t* bytes = calloc(1, sizeof(struct mt_memory_head) + size);
+    char* bytes = calloc(1, sizeof(struct mt_memory_head) + size);
     if (bytes != NULL)
     {
 	struct mt_memory_head* head = (struct mt_memory_head*) bytes;
@@ -111,36 +113,39 @@ void* mt_memory_calloc(
 #ifdef MT_MEMORY_DEBUG
 	head->index                      = mt_memory_index;
 	mt_memory_heads[mt_memory_index] = head;
-	if (head->index == MT_MEMORY_DEBUG_INDEX) mt_memory_trace("CALLOC", head);
+	if (head->index == MT_MEMORY_DEBUG_INDEX)
+	    mt_memory_trace("CALLOC", head);
 	mt_memory_index++;
 #endif
 
 	return bytes + sizeof(struct mt_memory_head);
     }
-    else return NULL;
+    else
+	return NULL;
 }
 
 void* mt_memory_stack_to_heap(
     size_t size,
     void (*destructor)(void*),
     void (*descriptor)(void*, int),
-    uint8_t* data)
+    char* data)
 {
-    uint8_t* bytes = mt_memory_alloc(size, destructor, descriptor);
+    char* bytes = mt_memory_alloc(size, destructor, descriptor);
 
     if (bytes != NULL)
     {
 	memcpy(bytes, data, size);
 	return bytes;
     }
-    else return NULL;
+    else
+	return NULL;
 }
 
 void* mt_memory_realloc(void* pointer, size_t size)
 {
     assert(pointer != NULL);
 
-    uint8_t* bytes = (uint8_t*) pointer;
+    char* bytes = (char*) pointer;
     bytes -= sizeof(struct mt_memory_head);
     bytes = realloc(bytes, sizeof(struct mt_memory_head) + size);
     if (bytes != NULL)
@@ -151,14 +156,15 @@ void* mt_memory_realloc(void* pointer, size_t size)
 #endif
 	return bytes + sizeof(struct mt_memory_head);
     }
-    else return NULL;
+    else
+	return NULL;
 }
 
 void* mt_memory_retain(void* pointer)
 {
     assert(pointer != NULL);
 
-    uint8_t* bytes = (uint8_t*) pointer;
+    char* bytes = (char*) pointer;
     bytes -= sizeof(struct mt_memory_head);
     struct mt_memory_head* head = (struct mt_memory_head*) bytes;
 
@@ -166,33 +172,38 @@ void* mt_memory_retain(void* pointer)
     {
 	head->retaincount += 1;
 #ifdef MT_MEMORY_DEBUG
-	if (head->index == MT_MEMORY_DEBUG_INDEX) mt_memory_trace("RETAIN", head);
+	if (head->index == MT_MEMORY_DEBUG_INDEX)
+	    mt_memory_trace("RETAIN", head);
 #endif
 	return pointer;
     }
-    else return NULL;
+    else
+	return NULL;
 }
 
 char mt_memory_release(void* pointer)
 {
     assert(pointer != NULL);
 
-    uint8_t* bytes = (uint8_t*) pointer;
+    char* bytes = (char*) pointer;
     bytes -= sizeof(struct mt_memory_head);
     struct mt_memory_head* head = (struct mt_memory_head*) bytes;
+
+    assert(head->retaincount > 0);
 
     head->retaincount -= 1;
 
 #ifdef MT_MEMORY_DEBUG
-    if (head->index == MT_MEMORY_DEBUG_INDEX) mt_memory_trace("RELEASE", head);
-    if (head->retaincount == -1) mt_memory_trace("RELEASE RETAINCOUNT -1!!!", head);
+    if (head->index == MT_MEMORY_DEBUG_INDEX)
+	mt_memory_trace("RELEASE", head);
+    if (head->retaincount == -1)
+	mt_memory_trace("RELEASE RETAINCOUNT -1!!!", head);
 #endif
-
-    assert(head->retaincount > -1);
 
     if (head->retaincount == 0)
     {
-	if (head->destructor != NULL) head->destructor(pointer);
+	if (head->destructor != NULL)
+	    head->destructor(pointer);
 	    /* don't clean up to catch overrelease or leaks */
 #ifndef MT_MEMORY_DEBUG
 	free(bytes);
@@ -207,7 +218,7 @@ size_t mt_memory_retaincount(void* pointer)
 {
     assert(pointer != NULL);
 
-    uint8_t* bytes = (uint8_t*) pointer;
+    char* bytes = (char*) pointer;
     bytes -= sizeof(struct mt_memory_head);
     struct mt_memory_head* head = (struct mt_memory_head*) bytes;
 
@@ -218,7 +229,7 @@ void mt_memory_describe(void* pointer, int level)
 {
     assert(pointer != NULL);
 
-    uint8_t* bytes = (uint8_t*) pointer;
+    char* bytes = (char*) pointer;
     bytes -= sizeof(struct mt_memory_head);
     struct mt_memory_head* head = (struct mt_memory_head*) bytes;
 

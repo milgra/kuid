@@ -897,7 +897,8 @@ uint32_t getpixel(image_t* image, unsigned int x, unsigned int y)
 float max(float a, float b)
 {
     return (a < b) ? a : b;
-};
+}
+
 float lerp(float s, float e, float t)
 {
     return s + (e - s) * t;
