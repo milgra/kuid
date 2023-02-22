@@ -2,6 +2,8 @@
 
 A modern, minimal ui renderer with html/css based stylimg written in headerless C.
 
+[![alt text](screenshot.png)](https://www.youtube.com/watch?v=5_f0dCKl6Uo)
+
 Features :
 - MacOS like smooth kinetic animations
 - font animatioms
