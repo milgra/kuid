@@ -15,6 +15,7 @@ char* mt_path_new_normalize(char* path);
 
 #include <limits.h>
 #include <string.h>
+#include <unistd.h>
 #ifdef __linux__
     #include <linux/limits.h>
 #endif
@@ -32,6 +33,7 @@ char* mt_path_new_append(char* root, char* component)
 
 char* mt_path_new_remove_last_component(char* path)
 {
+    /* TODO use POSIX dirname */
     int index;
     for (index = strlen(path) - 2; index > 0; index--)
     {
@@ -48,29 +50,37 @@ char* mt_path_new_remove_last_component(char* path)
 	memcpy(str, path, index);
 	return str;
     }
-    else return mt_string_new_cstring("/");
+    else
+	return mt_string_new_cstring("/");
 }
 
 char* mt_path_new_extension(char* path)
 {
-    int index;
-    for (index = strlen(path) - 1; index > -1; --index)
-    {
-	if (path[index] == '.')
-	{
-	    index++;
-	    break;
-	}
-    }
+    char* ext = strrchr(path, '.');
+    char* res = NULL;
+    if (ext)
+	res = mt_string_new_cstring(ext + 1);
 
-    int   len = strlen(path) - index;
-    char* ext = CAL(len + 1, NULL, mt_string_describe);
-    memcpy(ext, path + index, len);
-    return ext;
+    /* int index; */
+    /* for (index = strlen(path) - 1; index > -1; --index) */
+    /* { */
+    /* 	if (path[index] == '.') */
+    /* 	{ */
+    /* 	    index++; */
+    /* 	    break; */
+    /* 	} */
+    /* } */
+
+    /* int   len = strlen(path) - index; */
+    /* char* ext = CAL(len + 1, NULL, mt_string_describe); */
+    /* memcpy(ext, path + index, len); */
+    return res;
 }
 
 char* mt_path_new_filename(char* path)
 {
+    /* TODO use POSIX basename */
+
     int dotindex;
     for (dotindex = strlen(path) - 1; dotindex > -1; --dotindex)
     {
@@ -100,59 +110,62 @@ char* mt_path_new_filename(char* path)
 
 char* mt_path_new_normalize(char* path)
 {
-    mt_vector_t* tokens = mt_string_tokenize(path, "/");
-    char*        result = NULL;
+    char* extpath = mt_string_new_cstring("");
+    char* newpath = CAL(PATH_MAX, NULL, NULL);
 
-    if (tokens->length > 0)
+    if (path[0] == '~')
     {
-	result              = mt_string_new_cstring("");
-	mt_vector_t* newtok = VNEW();
-
-	for (size_t index = 0; index < tokens->length; index++)
-	{
-	    char* token = tokens->data[index];
-	    if (token[0] == '~')
-	    {
-		// replace tilde with home
-		VADDR(newtok, mt_string_new_cstring(getenv("HOME")));
-	    }
-	    else if (strlen(token) == 2 && token[0] == '.' && token[1] == '.')
-	    {
-		// delete last token
-		mt_vector_rem_index(newtok, newtok->length - 1);
-	    }
-	    else if (strlen(token) == 1 && token[0] == '.')
-	    {
-		// do nothing at current dir
-	    }
-	    else
-	    {
-		VADD(newtok, token);
-	    }
-	}
-
-	/* assemble new tokens */
-
-	for (size_t index = 0; index < newtok->length; index++)
-	{
-	    char* token = newtok->data[index];
-	    if (index > 0 || path[0] == '/' || path[0] == '"')
-		result = mt_string_append(result, "/");
-	    result = mt_string_append(result, token);
-	}
-
-	if (newtok->length == 0)
-	    result = mt_string_new_cstring("/");
-
-	REL(newtok);
+	/* replace tilde with home dir */
+	extpath = mt_string_append(extpath, getenv("HOME"));
+	extpath = mt_string_append_sub(extpath, path, 1, strlen(path) - 1);
     }
     else
-    {
-	result = mt_string_new_cstring("/");
-    }
+	extpath = mt_string_append(extpath, path);
 
-    REL(tokens);
-    return result;
+    realpath(extpath, newpath);
+
+    /* char cwd[PATH_MAX] = {"~"}; */
+    /* getcwd(cwd, sizeof(cwd)); */
+
+    /* char* newpath = NULL; */
+
+    /* if (path[0] == '~') */
+    /* { */
+    /* 	/\* replace tilde with home dir *\/ */
+    /* 	newpath = mt_string_new_cstring(getenv("HOME")); */
+    /* 	newpath = mt_string_append_sub(newpath, path, 1, strlen(path) - 1); */
+    /* } */
+    /* else if (path[0] == '\0') */
+    /* { */
+    /* 	/\* empty path to root path *\/ */
+    /* 	newpath = mt_string_new_cstring("/"); */
+    /* } */
+    /* else if (path[0] != '/') */
+    /* { */
+    /* 	/\* insert working directory in case of relative path *\/ */
+    /* 	newpath = mt_string_new_format(PATH_MAX, "%s/%s", cwd, path); */
+    /* } */
+    /* else */
+    /* { */
+    /* 	newpath = mt_string_new_cstring(path); */
+    /* } */
+
+    /* /\* remove last component in case of double dot *\/ */
+
+    /* size_t len = strlen(newpath); */
+    /* if (len > 3 && newpath[len - 1] == '.' && newpath[len - 2] == '.') */
+    /* { */
+    /* 	for (size_t index = len - 3; index-- > 0;) */
+    /* 	{ */
+    /* 	    if (newpath[index] == '/') */
+    /* 	    { */
+    /* 		newpath[index] = '\0'; */
+    /* 		break; */
+    /* 	    } */
+    /* 	} */
+    /* } */
+
+    return newpath;
 }
 
 #endif

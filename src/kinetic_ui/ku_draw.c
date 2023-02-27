@@ -36,6 +36,7 @@ void ku_draw_insert_bitmap(ku_bitmap_t* base, ku_bitmap_t* src, int sx, int sy);
 
 #if __INCLUDE_LEVEL__ == 0
 
+#include "mt_log.c"
 #include <string.h>
 
 void ku_draw_circle(ku_bitmap_t* bitmap, float cx, float cy, float r, float edge, uint32_t c)
@@ -934,9 +935,9 @@ void ku_draw_scale(ku_bitmap_t* srcbmp, ku_bitmap_t* dstbmp)
     int newWidth  = dst->w;
     int newHeight = dst->h;
     int x, y;
-    for (x = 0, y = 0; y < newHeight; x++)
+    for (x = 0, y = 0; y < newHeight - 1; x++)
     {
-	if (x > newWidth)
+	if (x == newWidth)
 	{
 	    x = 0;
 	    y++;
@@ -944,10 +945,11 @@ void ku_draw_scale(ku_bitmap_t* srcbmp, ku_bitmap_t* dstbmp)
 	// float gx = x / (float)(newWidth) * (src->w - 1);
 	// float gy = y / (float)(newHeight) * (src->h - 1);
 	//  Image should be clamped at the edges and not scaled.
-	float    gx     = max(x / (float) (newWidth) * (src->w) - 0.5f, src->w - 1);
-	float    gy     = max(y / (float) (newHeight) * (src->h) - 0.5, src->h - 1);
+	float    gx     = max(x / (float) (newWidth) * (src->w) - 0.5f, src->w - 2);
+	float    gy     = max(y / (float) (newHeight) * (src->h) - 0.5, src->h - 2);
 	int      gxi    = (int) gx;
 	int      gyi    = (int) gy;
+	
 	uint32_t result = 0;
 	uint32_t c00    = getpixel(src, gxi, gyi);
 	uint32_t c10    = getpixel(src, gxi + 1, gyi);
@@ -959,6 +961,7 @@ void ku_draw_scale(ku_bitmap_t* srcbmp, ku_bitmap_t* dstbmp)
 	    //((uint8_t*)&result)[i] = blerp( ((uint8_t*)&c00)[i], ((uint8_t*)&c10)[i], ((uint8_t*)&c01)[i], ((uint8_t*)&c11)[i], gxi - gx, gyi - gy); // this is shady
 	    result |= (uint8_t) blerp(getByte(c00, i), getByte(c10, i), getByte(c01, i), getByte(c11, i), gx - gxi, gy - gyi) << (8 * i);
 	}
+
 	putpixel(dst, x, y, result);
     }
 }

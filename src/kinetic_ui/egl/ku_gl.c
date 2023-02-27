@@ -76,7 +76,7 @@ glsha_t ku_gl_create_texture_shader()
 	"{"
 	" highp float alpha = vUv.w;"
 	" highp vec4 col = texture2D(sampler[0], vUv.xy);"
-	" if (alpha < 1.0) col.w *= alpha;"
+	" if (alpha != 1.0) col.w = alpha;"
 	" gl_FragColor = col;"
 	"}";
 
@@ -136,8 +136,9 @@ gltex_t ku_gl_create_texture(int index, uint32_t w, uint32_t h)
 
     glActiveTexture(GL_TEXTURE0 + tex.index);
     glBindTexture(GL_TEXTURE_2D, tex.tx);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    /* !!! GL_LINEAR breaks session record/replay determinism, interpolated values can somehow differ */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);

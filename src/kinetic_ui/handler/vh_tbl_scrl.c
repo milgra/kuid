@@ -43,6 +43,8 @@ void vh_tbl_scrl_enable(ku_view_t* view, int flag);
 
 #if __INCLUDE_LEVEL__ == 0
 
+#include "mt_log.c"
+
 #define SCROLLBAR 20.0
 
 void vh_tbl_scrl_set_item_count(ku_view_t* view, size_t count)
@@ -262,7 +264,12 @@ int vh_tbl_scrl_evt(ku_view_t* view, ku_event_t ev)
 {
     vh_tbl_scrl_t* vh = view->evt_han_data;
 
-    if (ev.type == KU_EVENT_MOUSE_MOVE)
+    if (ev.type == KU_EVENT_FRAME)
+    {
+	vh_tbl_scrl_update(view);
+	/* frame update stops if there is no change in the ui, scroller reaches final position or alpha */
+    }
+    else if (ev.type == KU_EVENT_MOUSE_MOVE)
     {
 	// show scroll
 	if (vh->scroll_visible == 0)

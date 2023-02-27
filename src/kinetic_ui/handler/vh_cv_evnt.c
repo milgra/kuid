@@ -11,11 +11,15 @@ enum vh_cv_evnt_event_id
 {
     VH_CV_EVENT_RESIZE,
     VH_CV_EVENT_CLICK,
+    VH_CV_EVENT_KEY_DOWN,
+    VH_CV_EVENT_KEY_UP
 };
 
 typedef struct _vh_cv_evnt_event_t
 {
     enum vh_cv_evnt_event_id id;
+    ku_view_t*               view;
+    ku_event_t               ev;
 } vh_cv_evnt_event_t;
 
 typedef struct _vh_cv_evnt_t
@@ -206,6 +210,18 @@ int vh_cv_evnt_evt(ku_view_t* view, ku_event_t ev)
     {
 	if (vh->tscrl_view)
 	    vh_cv_scrl_hide(vh->tscrl_view);
+    }
+    else if (ev.type == KU_EVENT_KEY_DOWN)
+    {
+	vh_cv_evnt_event_t event = {.id = VH_CV_EVENT_KEY_DOWN, .view = view, .ev = ev};
+	if (vh->on_event)
+	    (*vh->on_event)(event);
+    }
+    else if (ev.type == KU_EVENT_KEY_UP)
+    {
+	vh_cv_evnt_event_t event = {.id = VH_CV_EVENT_KEY_UP, .view = view, .ev = ev};
+	if (vh->on_event)
+	    (*vh->on_event)(event);
     }
 
     return 0;

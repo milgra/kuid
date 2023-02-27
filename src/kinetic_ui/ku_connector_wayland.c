@@ -1210,8 +1210,6 @@ void ku_wayland_pointer_handle_button(void* data, struct wl_pointer* wl_pointer,
 
 	if (window->wl_pointer == wl_pointer)
 	{
-	    window->pointer.drag = window->pointer.down;
-
 	    ku_event_t event = init_event();
 	    event.x          = window->pointer.px;
 	    event.y          = window->pointer.py;

@@ -49,6 +49,8 @@ void         mt_vector_rem_in_vector(mt_vector_t* mt_vector_a, mt_vector_t* mt_v
 #endif
 #if __INCLUDE_LEVEL__ == 0
 
+#include "mt_log.c"
+
 void mt_vector_del(void* vector);
 void mt_vector_describe_data(void* p, int level);
 void mt_vector_describe_mtvn(void* p, int level);
@@ -279,16 +281,18 @@ void mt_vector_sort_ins(mtvn_t* node, void* data, int (*comp)(void* left, void* 
     }
 }
 
-void mt_vector_sort_ord(mtvn_t* node, mt_vector_t* vector, int* index)
+void mt_vector_sort_ord(mtvn_t* node, mt_vector_t* vector, size_t* index)
 {
-    if (node->l) mt_vector_sort_ord(node->l, vector, index);
+    if (node->l)
+	mt_vector_sort_ord(node->l, vector, index);
     vector->data[*index] = node->c;
     *index += 1;
 
     // cleanup node
     mtvn_t* right = node->r;
 
-    if (right) mt_vector_sort_ord(right, vector, index);
+    if (right)
+	mt_vector_sort_ord(right, vector, index);
 }
 
 // sorts values in vector, needs a comparator function
@@ -296,18 +300,22 @@ void mt_vector_sort_ord(mtvn_t* node, mt_vector_t* vector, int* index)
 
 void mt_vector_sort(mt_vector_t* vector, int (*comp)(void* left, void* right))
 {
-    /* create cache */
-    /* TODO make it local to make it thread safe */
+    if (vector->length > 1)
+    {
+	/* create cache */
+	/* TODO make it local to make it thread safe */
 
-    cache  = CAL(sizeof(mtvn_t) * vector->length, NULL, NULL);
-    cachei = 1;
+	cache  = CAL(sizeof(mtvn_t) * vector->length, NULL, NULL);
+	cachei = 1;
 
-    for (size_t index = 0; index < vector->length; index++) mt_vector_sort_ins(cache, vector->data[index], comp);
-    int index = 0;
+	for (size_t index = 0; index < vector->length; index++) mt_vector_sort_ins(cache, vector->data[index], comp);
 
-    mt_vector_sort_ord(cache, vector, &index);
+	size_t index = 0;
 
-    REL(cache);
+	mt_vector_sort_ord(cache, vector, &index);
+
+	REL(cache);
+    }
 }
 
 void mt_vector_describe(void* pointer, int level)

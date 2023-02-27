@@ -351,7 +351,11 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	vh->inertia_y = 0;
     }
 
-    return (vh->tscrl_view != NULL);
+    /* TODO refactor ku_window's key and text handling */
+    if (ev.type == KU_EVENT_KEY_DOWN || ev.type == KU_EVENT_KEY_UP)
+	return 0;
+    else
+	return (vh->tscrl_view != NULL);
 }
 
 void vh_tbl_evnt_del(void* p)

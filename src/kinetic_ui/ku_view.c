@@ -217,6 +217,13 @@ void ku_view_del(void* pointer)
 	REL(view->script);
 
     REL(view->id);
+
+    for (size_t index = 0; index < view->views->length; index++)
+    {
+	ku_view_t* sview = view->views->data[index];
+	sview->parent    = NULL;
+    }
+
     REL(view->views);
 }
 
@@ -332,6 +339,8 @@ void ku_view_insert_subview(ku_view_t* view, ku_view_t* subview, uint32_t index)
 
 void ku_view_remove_subview(ku_view_t* view, ku_view_t* subview)
 {
+    ku_view_set_parent(subview, NULL);
+  
     char success = VREM(view->views, subview);
 
     if (success == 1)
@@ -340,8 +349,6 @@ void ku_view_remove_subview(ku_view_t* view, ku_view_t* subview)
 	ku_view_t* tview = view;
 	while (tview->parent != NULL) tview = tview->parent;
 	tview->rearrange = 1;
-
-	ku_view_set_parent(subview, NULL);
     }
 }
 

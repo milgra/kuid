@@ -176,7 +176,10 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	if (ev.type == KU_EVENT_MOUSE_UP)
 	    outev.type = KU_EVENT_MOUSE_UP_OUT;
 
-	if (ev.type == KU_EVENT_MOUSE_DOWN)
+	/* binding this to only mouse down disables drop on different table */
+	/* but enables out of mouse input field activation */
+	if (ev.type == KU_EVENT_MOUSE_DOWN ||
+	    (ev.type == KU_EVENT_MOUSE_UP && ev.drag))
 	{
 	    for (size_t i = win->ptrqueue->length; i-- > 0;)
 	    {
