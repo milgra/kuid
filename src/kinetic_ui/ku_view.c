@@ -359,7 +359,7 @@ void ku_view_remove_from_parent(ku_view_t* view)
 
 void ku_view_set_parent(ku_view_t* view, ku_view_t* parent)
 {
-    view->parent = parent;
+    if (view) view->parent = parent;
 }
 
 void ku_view_coll_touched(ku_view_t* view, ku_event_t ev, mt_vector_t* queue)

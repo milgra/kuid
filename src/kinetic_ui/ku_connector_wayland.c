@@ -931,7 +931,7 @@ wl_window_t* ku_wayland_create_generic_layer(struct monitor_info* monitor, int w
     info->margin        = margin;
     info->monitor       = monitor;
     info->hidden        = 1;
-    memcpy(info->anchor, anchor, 4);
+    memcpy(info->anchor, anchor, strlen(anchor) < 5 ? strlen(anchor) : 4);
 
     info->type = WL_WINDOW_LAYER;
 

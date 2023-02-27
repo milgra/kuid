@@ -124,6 +124,8 @@ char* mt_path_new_normalize(char* path)
 
     realpath(extpath, newpath);
 
+    REL(extpath);
+
     /* char cwd[PATH_MAX] = {"~"}; */
     /* getcwd(cwd, sizeof(cwd)); */
 
