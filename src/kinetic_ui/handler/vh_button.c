@@ -124,7 +124,7 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 	}
     }
 
-    return 0;
+    return 1;
 }
 
 void vh_button_set_state(ku_view_t* view, vh_button_state_t state)

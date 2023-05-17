@@ -44,7 +44,7 @@ struct _vh_tbl_evnt_t
     int        inertia_y;
     float      sx;
     float      sy;
-    void (*on_event)(vh_tbl_evnt_event_t event);
+    int (*on_event)(vh_tbl_evnt_event_t event);
 };
 
 void vh_tbl_evnt_attach(
@@ -52,7 +52,7 @@ void vh_tbl_evnt_attach(
     ku_view_t* tbody_view,
     ku_view_t* tscrl_view,
     ku_view_t* thead_view,
-    void (*on_event)(vh_tbl_evnt_event_t event),
+    int (*on_event)(vh_tbl_evnt_event_t event),
     void* userdata);
 
 #endif
@@ -171,6 +171,8 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 {
     vh_tbl_evnt_t* vh = view->evt_han_data;
 
+    int cancel = 0;
+
     if (ev.type == KU_EVENT_FRAME)
     {
 	if (vh->inertia_x || vh->inertia_y)
@@ -187,6 +189,8 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	vh_tbl_evnt_move(view);
 	// cause dirty rect which causes frame events to flow for later animation
 	vh->tbody_view->frame.dim_changed = 1;
+
+	cancel = 1;
     }
     else if (ev.type == KU_EVENT_SCROLL_X_END)
     {
@@ -197,6 +201,8 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    // cause dirty rect which causes frame events to flow for later animation
 	    vh->tbody_view->frame.dim_changed = 1;
 	}
+
+	cancel = 1;
     }
     else if (ev.type == KU_EVENT_SCROLL_Y_END)
     {
@@ -207,6 +213,8 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    // cause dirty rect which causes frame events to flow for later animation
 	    vh->tbody_view->frame.dim_changed = 1;
 	}
+
+	cancel = 1;
     }
     else if (ev.type == KU_EVENT_RESIZE)
     {
@@ -218,7 +226,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	{
 	    vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_DRAG, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
 	    if (vh->on_event)
-		(*vh->on_event)(event);
+		cancel = (*vh->on_event)(event);
 
 	    vh->selected_item = NULL;
 	}
@@ -256,7 +264,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 				.ev       = ev,
 				.userdata = vh->userdata};
 			    if (vh->on_event)
-				(*vh->on_event)(event);
+				cancel = (*vh->on_event)(event);
 			}
 			if (ev.button == 3)
 			{
@@ -275,7 +283,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 				.ev       = ev,
 				.userdata = vh->userdata};
 			if (vh->on_event)
-			    (*vh->on_event)(event);
+			    cancel = (*vh->on_event)(event);
 		    }
 
 		    break;
@@ -291,7 +299,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 		    .ev       = ev,
 		    .userdata = vh->userdata};
 		if (vh->on_event)
-		    (*vh->on_event)(event);
+		    cancel = (*vh->on_event)(event);
 	    }
 	}
     }
@@ -319,7 +327,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 
 		vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_DROP, .view = view, .rowview = vh->selected_item, .index = bvh->head_index + index, .ev = ev, .userdata = vh->userdata};
 		if (vh->on_event)
-		    (*vh->on_event)(event);
+		    cancel = (*vh->on_event)(event);
 	    }
 	}
     }
@@ -327,13 +335,13 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_DOWN, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
 	if (vh->on_event)
-	    (*vh->on_event)(event);
+	    cancel = (*vh->on_event)(event);
     }
     else if (ev.type == KU_EVENT_KEY_UP)
     {
 	vh_tbl_evnt_event_t event = {.id = VH_TBL_EVENT_KEY_UP, .view = view, .rowview = vh->selected_item, .index = 0, .ev = ev, .userdata = vh->userdata};
 	if (vh->on_event)
-	    (*vh->on_event)(event);
+	    cancel = (*vh->on_event)(event);
     }
     else if (ev.type == KU_EVENT_FOCUS)
     {
@@ -351,11 +359,7 @@ int vh_tbl_evnt_evt(ku_view_t* view, ku_event_t ev)
 	vh->inertia_y = 0;
     }
 
-    /* TODO refactor ku_window's key and text handling */
-    if (ev.type == KU_EVENT_KEY_DOWN || ev.type == KU_EVENT_KEY_UP)
-	return 0;
-    else
-	return (vh->tscrl_view != NULL);
+    return cancel;
 }
 
 void vh_tbl_evnt_del(void* p)
@@ -372,7 +376,7 @@ void vh_tbl_evnt_attach(
     ku_view_t* tbody_view,
     ku_view_t* tscrl_view,
     ku_view_t* thead_view,
-    void (*on_event)(vh_tbl_evnt_event_t event),
+    int (*on_event)(vh_tbl_evnt_event_t event),
     void* userdata)
 {
     assert(view->evt_han == NULL && view->evt_han_data == NULL);

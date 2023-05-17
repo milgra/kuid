@@ -50,6 +50,8 @@ int vh_drag_evt(ku_view_t* view, ku_event_t ev)
 	    if (vh->on_event)
 		(*vh->on_event)(event);
 	}
+
+	return 1;
     }
     if (ev.type == KU_EVENT_MOUSE_UP && ev.drag)
     {
@@ -64,9 +66,11 @@ int vh_drag_evt(ku_view_t* view, ku_event_t ev)
 	    REL(vh->dragged_view);
 	    vh->dragged_view = NULL;
 	}
+
+	return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 void vh_drag_del(void* p)

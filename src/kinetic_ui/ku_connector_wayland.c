@@ -65,6 +65,7 @@ struct keyboard_info
     struct xkb_state*   xkb_state;
     bool                control;
     bool                shift;
+    bool                pressed;
 
     /* key repeater config */
 
@@ -1406,6 +1407,8 @@ static void keyboard_key(void* data, struct wl_keyboard* wl_keyboard, uint32_t s
 	spec.it_value.tv_sec   = wlc.keyboard.rep_delay / 1000;
 	spec.it_value.tv_nsec  = (wlc.keyboard.rep_delay % 1000) * 1000000l;
 	timerfd_settime(wlc.keyboard.rep_timer_fd, 0, &spec, NULL);
+
+	wlc.keyboard.pressed = 1;
     }
     else if (key_state == WL_KEYBOARD_KEY_STATE_RELEASED)
     {
@@ -1414,6 +1417,8 @@ static void keyboard_key(void* data, struct wl_keyboard* wl_keyboard, uint32_t s
 	struct itimerspec spec = {0};
 	timerfd_settime(wlc.keyboard.rep_timer_fd, 0, &spec, NULL);
 	wlc.keyboard.rep_event.repeat = 0;
+
+	wlc.keyboard.pressed = 0;
     }
 }
 
@@ -1425,11 +1430,14 @@ static void keyboard_repeat()
     event.repeat = 1;
     (*wlc.update)(event);
 
-    /* reset timer */
-    struct itimerspec spec = {0};
-    spec.it_value.tv_sec   = wlc.keyboard.rep_period / 1000;
-    spec.it_value.tv_nsec  = (wlc.keyboard.rep_period % 1000) * 1000000l;
-    timerfd_settime(wlc.keyboard.rep_timer_fd, 0, &spec, NULL);
+    if (wlc.keyboard.pressed == 1)
+    {
+	/* reset timer */
+	struct itimerspec spec = {0};
+	spec.it_value.tv_sec   = wlc.keyboard.rep_period / 1000;
+	spec.it_value.tv_nsec  = (wlc.keyboard.rep_period % 1000) * 1000000l;
+	timerfd_settime(wlc.keyboard.rep_timer_fd, 0, &spec, NULL);
+    }
 }
 
 static void keyboard_repeat_info(void* data, struct wl_keyboard* wl_keyboard, int32_t rate, int32_t delay)
@@ -1771,7 +1779,8 @@ void ku_wayland_init(
 	wlc.time_event_timer_fd   = timerfd_create(CLOCK_MONOTONIC, 0);
 	wlc.keyboard.rep_timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
 
-	if (wlc.keyboard.rep_timer_fd < 0) mt_log_error("cannot create key repeat timer");
+	if (wlc.keyboard.rep_timer_fd < 0)
+	    mt_log_error("cannot create key repeat timer");
 
 	struct wl_registry* registry = wl_display_get_registry(wlc.display);
 	wl_registry_add_listener(registry, &registry_listener, NULL);
@@ -1811,14 +1820,16 @@ void ku_wayland_init(
 	    {
 		if (wl_display_flush(wlc.display) < 0)
 		{
-		    if (errno == EAGAIN) continue;
+		    if (errno == EAGAIN)
+			continue;
 		    mt_log_error("wayland display flush error");
 		    break;
 		}
 
 		if (poll(fds, nfds, -1) < 0)
 		{
-		    if (errno == EAGAIN) continue;
+		    if (errno == EAGAIN)
+			continue;
 		    mt_log_error("poll error");
 		    break;
 		}
@@ -1869,7 +1880,8 @@ void ku_wayland_init(
 	    (*wlc.destroy)();
 
 	    wl_surface_destroy(wlc.cursor_surface);
-	    if (wlc.cursor_theme) wl_cursor_theme_destroy(wlc.cursor_theme);
+	    if (wlc.cursor_theme)
+		wl_cursor_theme_destroy(wlc.cursor_theme);
 
 	    wl_compositor_destroy(wlc.compositor);
 	}

@@ -27,8 +27,6 @@ void         ku_window_layout(ku_window_t* window);
 void         ku_window_add(ku_window_t* window, ku_view_t* view);
 void         ku_window_remove(ku_window_t* window, ku_view_t* view);
 void         ku_window_activate(ku_window_t* win, ku_view_t* view, int flag);
-void         ku_window_deactivate(ku_window_t* window, ku_view_t* view);
-void         ku_window_set_focusable(ku_window_t* window, mt_vector_t* views);
 void         ku_window_event(ku_window_t* window, ku_event_t event);
 ku_rect_t    ku_window_update(ku_window_t* window, uint32_t time);
 
@@ -106,12 +104,6 @@ void ku_window_activate(ku_window_t* win, ku_view_t* view, int flag)
 	mt_vector_rem(win->ptrqueue, view);
 }
 
-void ku_window_set_focusable(ku_window_t* window, mt_vector_t* views)
-{
-    if (window->focusable) REL(window->focusable);
-    window->focusable = RET(views);
-}
-
 void ku_window_event(ku_window_t* win, ku_event_t ev)
 {
     if (ev.type == KU_EVENT_FRAME)
@@ -149,7 +141,7 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    {
 		if (v->evt_han)
 		{
-		    if (!(*v->evt_han)(v, outev))
+		    if ((*v->evt_han)(v, outev))
 			break;
 		}
 	    }
@@ -163,7 +155,7 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->movqueue->data[i];
 	    if (v->evt_han)
 	    {
-		if (!(*v->evt_han)(v, ev))
+		if ((*v->evt_han)(v, ev))
 		    break;
 	    }
 	}
@@ -186,7 +178,7 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 		ku_view_t* v = win->ptrqueue->data[i];
 		if (v->evt_han)
 		{
-		    if (!(*v->evt_han)(v, outev))
+		    if ((*v->evt_han)(v, outev))
 			break;
 		}
 	    }
@@ -200,7 +192,7 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->evt_han)
 	    {
-		if (!(*v->evt_han)(v, ev))
+		if ((*v->evt_han)(v, ev))
 		    break;
 	    }
 	}
@@ -215,7 +207,7 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->evt_han)
 	    {
-		if (!(*v->evt_han)(v, ev))
+		if ((*v->evt_han)(v, ev))
 		    break;
 	    }
 	}
@@ -227,61 +219,20 @@ void ku_window_event(ku_window_t* win, ku_event_t ev)
 	    ku_view_t* v = win->ptrqueue->data[i];
 	    if (v->evt_han)
 	    {
-		if (!(*v->evt_han)(v, ev))
+		if ((*v->evt_han)(v, ev))
 		    break;
 	    }
 	}
     }
     else if (ev.type == KU_EVENT_KEY_DOWN || ev.type == KU_EVENT_KEY_UP)
     {
-	if (ev.type == KU_EVENT_KEY_DOWN && ev.keycode == XKB_KEY_Tab && win->focusable->length > 0)
-	{
-	    if (win->focused == NULL)
-	    {
-		ku_view_t* v = win->focusable->data[0];
-		win->focused = v;
-		if (v->evt_han)
-		    (*v->evt_han)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
-		mt_vector_add(win->ptrqueue, v);
-	    }
-	    else
-	    {
-		/* unfocus first */
-		size_t index = 0;
-		for (index = 0; index < win->focusable->length; index++)
-		{
-		    ku_view_t* v = win->focusable->data[index];
-
-		    if (win->focused == v)
-		    {
-			win->focused = NULL;
-			if (v->evt_han)
-			    (*v->evt_han)(v, (ku_event_t){.type = KU_EVENT_UNFOCUS});
-			mt_vector_rem(win->ptrqueue, v);
-			break;
-		    }
-		}
-
-		/* focus next in queue */
-		index++;
-		if (index == win->focusable->length)
-		    index = 0;
-
-		ku_view_t* v = win->focusable->data[index];
-		win->focused = v;
-		if (v->evt_han)
-		    (*v->evt_han)(v, (ku_event_t){.type = KU_EVENT_FOCUS});
-		mt_vector_add(win->ptrqueue, v);
-	    }
-	}
-
 	for (size_t i = win->ptrqueue->length; i-- > 0;)
 	{
 	    ku_view_t* v = win->ptrqueue->data[i];
 
 	    if (v->evt_han)
 	    {
-		if (!(*v->evt_han)(v, ev))
+		if ((*v->evt_han)(v, ev))
 		    break;
 	    }
 	}

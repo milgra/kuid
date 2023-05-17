@@ -224,7 +224,12 @@ int vh_cv_evnt_evt(ku_view_t* view, ku_event_t ev)
 	    (*vh->on_event)(event);
     }
 
-    return 0;
+    if (ev.type == KU_EVENT_KEY_DOWN || ev.type == KU_EVENT_KEY_UP)
+    {
+	return 0;
+    }
+
+    return 1;
 }
 
 void vh_cv_evnt_del(void* p)

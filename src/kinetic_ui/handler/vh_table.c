@@ -58,13 +58,13 @@ struct _vh_table_t
     textstyle_t rowsstyle; // selected row textstyle
     textstyle_t headstyle; // header textstyle
 
-    void (*on_event)(vh_table_event_t event);
+    int (*on_event)(vh_table_event_t event);
 };
 
 void vh_table_attach(
     ku_view_t*   view,
     mt_vector_t* fields,
-    void (*on_event)(vh_table_event_t event));
+    int (*on_event)(vh_table_event_t event));
 
 void vh_table_select(
     ku_view_t* view,
@@ -371,9 +371,11 @@ void vh_table_item_recycle(
 
 /* table event */
 
-void vh_table_evnt_event(vh_tbl_evnt_event_t event)
+int vh_table_evnt_event(vh_tbl_evnt_event_t event)
 {
     vh_table_t* vh = (vh_table_t*) event.userdata;
+
+    int cancel = 0;
 
     if (event.id == VH_TBL_EVENT_SELECT)
     {
@@ -441,7 +443,7 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .ev             = event.ev,
 	    .view           = vh->view};
 
-	(*vh->on_event)(tevent);
+	cancel = (*vh->on_event)(tevent);
     }
     else if (event.id == VH_TBL_EVENT_CONTEXT)
     {
@@ -511,7 +513,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .rowview        = event.rowview,
 	    .view           = vh->view,
 	    .ev             = event.ev};
-	(*vh->on_event)(tevent);
+
+	cancel = (*vh->on_event)(tevent);
     }
     else if (event.id == VH_TBL_EVENT_OPEN)
     {
@@ -522,7 +525,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .selected_index = event.index,
 	    .view           = vh->view,
 	    .rowview        = event.rowview};
-	(*vh->on_event)(tevent);
+
+	cancel = (*vh->on_event)(tevent);
     }
     else if (event.id == VH_TBL_EVENT_DRAG)
     {
@@ -533,7 +537,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .selected_index = event.index,
 	    .view           = vh->view,
 	    .rowview        = event.rowview};
-	(*vh->on_event)(tevent);
+
+	cancel = (*vh->on_event)(tevent);
     }
     else if (event.id == VH_TBL_EVENT_DROP)
     {
@@ -544,7 +549,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .selected_index = event.index,
 	    .view           = vh->view,
 	    .rowview        = event.rowview};
-	(*vh->on_event)(tevent);
+
+	cancel = (*vh->on_event)(tevent);
     }
     else if (event.id == VH_TBL_EVENT_KEY_DOWN)
     {
@@ -556,7 +562,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .view           = vh->view,
 	    .rowview        = event.rowview,
 	    .ev             = event.ev};
-	(*vh->on_event)(tevent);
+
+	cancel = (*vh->on_event)(tevent);
 
 	if (event.ev.keycode == XKB_KEY_Down || event.ev.keycode == XKB_KEY_Up)
 	{
@@ -574,7 +581,7 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		.view           = vh->view,
 		.rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index)};
 
-	    (*vh->on_event)(tevent);
+	    cancel = (*vh->on_event)(tevent);
 	}
 
 	if (event.ev.keycode == XKB_KEY_Return)
@@ -588,7 +595,8 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		.view           = vh->view,
 		.rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index),
 	    };
-	    (*vh->on_event)(tevent);
+
+	    cancel = (*vh->on_event)(tevent);
 	}
     }
     else if (event.id == VH_TBL_EVENT_KEY_UP)
@@ -602,7 +610,7 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 	    .rowview        = event.rowview,
 	    .ev             = event.ev};
 
-	(*vh->on_event)(tevent);
+	cancel = (*vh->on_event)(tevent);
 
 	if (event.ev.keycode == XKB_KEY_Down || event.ev.keycode == XKB_KEY_Up)
 	{
@@ -620,10 +628,12 @@ void vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		    .view           = vh->view,
 		    .rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index)};
 
-		(*vh->on_event)(tevent);
+		cancel = (*vh->on_event)(tevent);
 	    }
 	}
     }
+
+    return cancel;
 }
 
 void vh_table_del(
@@ -655,7 +665,7 @@ void vh_table_desc(
 void vh_table_attach(
     ku_view_t*   view,
     mt_vector_t* fields,
-    void (*on_event)(vh_table_event_t event))
+    int (*on_event)(vh_table_event_t event))
 {
     assert(view != NULL);
 
@@ -897,62 +907,66 @@ void vh_table_select(
 
     float scale = view->style.scale;
 
-    vh->selected_index = index;
-    if (vh->selected_index < 0)
-	vh->selected_index = 0;
-    if (vh->selected_index > (int32_t) vh->items->length - 1)
-	vh->selected_index = (int32_t) vh->items->length - 1;
-
-    if (bvh->bot_index < vh->selected_index)
+    if (vh->items)
     {
-	vh_tbl_body_vjump(vh->body_v, vh->selected_index + 1, 0);
 
-	if (bvh->tail_index == bvh->bot_index)
+	vh->selected_index = index;
+	if (vh->selected_index < 0)
+	    vh->selected_index = 0;
+	if (vh->selected_index > (int32_t) vh->items->length - 1)
+	    vh->selected_index = (int32_t) vh->items->length - 1;
+
+	if (bvh->bot_index < vh->selected_index)
 	{
-	    /* check if bottom item is out of bounds */
-	    ku_view_t* lastitem = mt_vector_tail(bvh->items);
-	    ku_rect_t  iframe   = lastitem->frame.local;
-	    ku_rect_t  vframe   = vh->body_v->frame.local;
+	    vh_tbl_body_vjump(vh->body_v, vh->selected_index + 1, 0);
 
-	    if (iframe.y + iframe.h > vframe.h)
+	    if (bvh->tail_index == bvh->bot_index)
 	    {
-		vh_tbl_body_move(vh->body_v, 0, iframe.y + iframe.h - vframe.h - 20.0);
+		/* check if bottom item is out of bounds */
+		ku_view_t* lastitem = mt_vector_tail(bvh->items);
+		ku_rect_t  iframe   = lastitem->frame.local;
+		ku_rect_t  vframe   = vh->body_v->frame.local;
+
+		if (iframe.y + iframe.h > vframe.h)
+		{
+		    vh_tbl_body_move(vh->body_v, 0, iframe.y + iframe.h - vframe.h - 20.0);
+		}
 	    }
 	}
-    }
 
-    if (vh->selected_index <= bvh->top_index)
-    {
-	vh_tbl_body_vjump(vh->body_v, vh->selected_index - 1, 1);
-    }
-
-    if (add == 0)
-	mt_vector_reset(vh->selected_items);
-    mt_map_t* sel = vh->items->data[vh->selected_index];
-    VADD(vh->selected_items, sel);
-
-    /* color item */
-
-    for (size_t i = 0; i < bvh->items->length; i++)
-    {
-	int        realindex = bvh->head_index + i;
-	mt_map_t*  data      = vh->items->data[realindex];
-	ku_view_t* item      = bvh->items->data[i];
-
-	textstyle_t style = realindex % 2 == 0 ? vh->rowastyle : vh->rowbstyle;
-	if (mt_vector_index_of_data(vh->selected_items, data) < SIZE_MAX)
-	    style = vh->rowsstyle;
-
-	for (size_t i = 0; i < item->views->length; i++)
+	if (vh->selected_index <= bvh->top_index)
 	{
-	    ku_view_t* cellview   = item->views->data[i];
-	    cellview->style.scale = scale;
-	    tg_text_set_style(cellview, style);
+	    vh_tbl_body_vjump(vh->body_v, vh->selected_index - 1, 1);
 	}
-    }
 
-    if (vh->scrl_v)
-	vh_tbl_scrl_update(vh->scrl_v);
+	if (add == 0)
+	    mt_vector_reset(vh->selected_items);
+	mt_map_t* sel = vh->items->data[vh->selected_index];
+	VADD(vh->selected_items, sel);
+
+	/* color item */
+
+	for (size_t i = 0; i < bvh->items->length; i++)
+	{
+	    int        realindex = bvh->head_index + i;
+	    mt_map_t*  data      = vh->items->data[realindex];
+	    ku_view_t* item      = bvh->items->data[i];
+
+	    textstyle_t style = realindex % 2 == 0 ? vh->rowastyle : vh->rowbstyle;
+	    if (mt_vector_index_of_data(vh->selected_items, data) < SIZE_MAX)
+		style = vh->rowsstyle;
+
+	    for (size_t i = 0; i < item->views->length; i++)
+	    {
+		ku_view_t* cellview   = item->views->data[i];
+		cellview->style.scale = scale;
+		tg_text_set_style(cellview, style);
+	    }
+	}
+
+	if (vh->scrl_v)
+	    vh_tbl_scrl_update(vh->scrl_v);
+    }
 }
 
 mt_vector_t* vh_table_get_fields(ku_view_t* view)
