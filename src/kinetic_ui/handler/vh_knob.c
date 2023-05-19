@@ -23,6 +23,7 @@ typedef struct _vh_knob_t
 
 int vh_knob_evt(ku_view_t* view, ku_event_t ev)
 {
+    int cancel = 1;
     if (ev.type == KU_EVENT_MOUSE_DOWN || (ev.type == KU_EVENT_MOUSE_MOVE && ev.drag))
     {
 	vh_knob_t* vh = view->evt_han_data;
@@ -62,7 +63,7 @@ int vh_knob_evt(ku_view_t* view, ku_event_t ev)
 	(*vh->ratio_changed)(view, angle);
     }
 
-    return 1;
+    return cancel;
 }
 
 void vh_knob_desc(void* p, int level)

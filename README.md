@@ -20,9 +20,14 @@ https://github.com/milgra/vmp
 https://github.com/milgra/sov  
 https://github.com/milgra/wcp  
 
+Tips :
+
+Always assert after GETV to make sure html really contains the wanted view.
+
 Roadmap :
 
-- example projects
+- error handling in mt core functions ( add, del, rel, expand, etc should return with int)
+- example projects, test app
 - increase fault tolerance of css and html parser
 - increase standards compatibility of css and html (type=button, blocks=true non standard stuff)
 - figure out how to use dirty rects with double buffering in ku_renderer_egl

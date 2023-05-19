@@ -495,7 +495,7 @@ int vh_textinput_evt(ku_view_t* view, ku_event_t ev)
 	/* vh_textinput_upd(view); */
     }
 
-    return 0;
+    return 1;
 }
 
 void vh_textinput_del(void* p)

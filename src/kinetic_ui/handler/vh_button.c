@@ -32,7 +32,7 @@ typedef struct _vh_button_event_t
 
 struct _vh_button_t
 {
-    void (*on_event)(vh_button_event_t);
+    int (*on_event)(vh_button_event_t);
     vh_button_type_t  type;
     vh_button_state_t state;
 
@@ -41,7 +41,7 @@ struct _vh_button_t
     char       enabled;
 };
 
-void vh_button_add(ku_view_t* view, vh_button_type_t type, void (*on_event)(vh_button_event_t));
+void vh_button_add(ku_view_t* view, vh_button_type_t type, int (*on_event)(vh_button_event_t));
 void vh_button_set_state(ku_view_t* view, vh_button_state_t state);
 void vh_button_set_enabled(ku_view_t* view, int flag);
 
@@ -71,6 +71,8 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 {
     vh_button_t* vh = view->evt_han_data;
 
+    int cancel = 0;
+
     if (vh->enabled)
     {
 	if (ev.type == KU_EVENT_MOUSE_DOWN)
@@ -84,6 +86,8 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 		if (vh->onview)
 		    vh_anim_alpha(vh->onview, 0.0, 1.0, 10, AT_LINEAR);
 	    }
+
+	    cancel = 1;
 	}
 	else if (ev.type == KU_EVENT_MOUSE_UP)
 	{
@@ -108,7 +112,7 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 
 		vh_button_event_t event = {.id = VH_BUTTON_EVENT, .view = view, .vh = vh, .ev = ev};
 		if (vh->on_event)
-		    (*vh->on_event)(event);
+		    cancel = (*vh->on_event)(event);
 	    }
 	    else
 	    {
@@ -116,7 +120,7 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 
 		vh_button_event_t event = {.id = VH_BUTTON_EVENT, .view = view, .vh = vh, .ev = ev};
 		if (vh->on_event)
-		    (*vh->on_event)(event);
+		    cancel = (*vh->on_event)(event);
 
 		/* if (vh->offview) vh_anim_alpha(vh->offview, 1.0, 0.0, 10, AT_LINEAR); */
 		/* if (vh->onview) vh_anim_alpha(vh->onview, 0.0, 1.0, 10, AT_LINEAR); */
@@ -124,7 +128,7 @@ int vh_button_evt(ku_view_t* view, ku_event_t ev)
 	}
     }
 
-    return 1;
+    return cancel;
 }
 
 void vh_button_set_state(ku_view_t* view, vh_button_state_t state)
@@ -162,7 +166,7 @@ void vh_button_desc(void* p, int level)
     printf("vh_button");
 }
 
-void vh_button_add(ku_view_t* view, vh_button_type_t type, void (*on_event)(vh_button_event_t))
+void vh_button_add(ku_view_t* view, vh_button_type_t type, int (*on_event)(vh_button_event_t))
 {
     assert(view->evt_han == NULL && view->evt_han_data == NULL);
 

@@ -19,10 +19,10 @@ typedef struct _vh_touch_event_t
 
 struct _vh_touch_t
 {
-    void (*on_event)(vh_touch_event_t);
+    int (*on_event)(vh_touch_event_t);
 };
 
-void vh_touch_add(ku_view_t* view, void (*on_event)(vh_touch_event_t));
+void vh_touch_add(ku_view_t* view, int (*on_event)(vh_touch_event_t));
 
 #endif
 
@@ -32,15 +32,16 @@ void vh_touch_add(ku_view_t* view, void (*on_event)(vh_touch_event_t));
 
 int vh_touch_evt(ku_view_t* view, ku_event_t ev)
 {
+    int cancel = 0;
     if (ev.type == KU_EVENT_MOUSE_DOWN)
     {
 	vh_touch_t*      vh    = view->evt_han_data;
 	vh_touch_event_t event = {.id = VH_TOUCH_EVENT, .vh = vh, .view = view};
 	if (vh->on_event)
-	    (*vh->on_event)(event);
+	    cancel = (*vh->on_event)(event);
     }
 
-    return 0;
+    return cancel;
 }
 
 void vh_touch_del(void* p)
@@ -53,7 +54,7 @@ void vh_touch_desc(void* p, int level)
     printf("vh_touch");
 }
 
-void vh_touch_add(ku_view_t* view, void (*on_event)(vh_touch_event_t))
+void vh_touch_add(ku_view_t* view, int (*on_event)(vh_touch_event_t))
 {
     assert(view->evt_han == NULL && view->evt_han_data == NULL);
 

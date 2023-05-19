@@ -74,7 +74,7 @@ glsha_t ku_gl_create_texture_shader()
 	"{"
 	" highp float alpha = vUv.w;"
 	" highp vec4 col = texture2D(sampler[0], vUv.xy);"
-	" if (alpha != 1.0) col.w = alpha;"
+	" if (alpha != 1.0) col.w *= alpha;"
 	" gl_FragColor = col;"
 	"}";
 

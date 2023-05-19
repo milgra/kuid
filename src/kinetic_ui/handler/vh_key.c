@@ -14,10 +14,10 @@ typedef struct _vh_key_event_t
 
 struct _vh_key_t
 {
-    void (*on_event)(vh_key_event_t event);
+    int (*on_event)(vh_key_event_t event);
 };
 
-void vh_key_add(ku_view_t* view, void (*on_event)(vh_key_event_t));
+void vh_key_add(ku_view_t* view, int (*on_event)(vh_key_event_t));
 
 #endif
 
@@ -25,15 +25,16 @@ void vh_key_add(ku_view_t* view, void (*on_event)(vh_key_event_t));
 
 int vh_key_evt(ku_view_t* view, ku_event_t ev)
 {
+    int cancel = 0;
     if (ev.type == KU_EVENT_KEY_DOWN)
     {
 	vh_key_t*      vh    = view->evt_han_data;
 	vh_key_event_t event = {.ev = ev, .vh = vh, .view = view};
 	if (vh->on_event)
-	    (*vh->on_event)(event);
+	    cancel = (*vh->on_event)(event);
     }
 
-    return 0;
+    return cancel;
 }
 
 void vh_key_del(void* p)
@@ -45,7 +46,7 @@ void vh_key_desc(void* p, int level)
     printf("vh_key");
 }
 
-void vh_key_add(ku_view_t* view, void (*on_event)(vh_key_event_t))
+void vh_key_add(ku_view_t* view, int (*on_event)(vh_key_event_t))
 {
     assert(view->evt_han == NULL && view->evt_han_data == NULL);
 

@@ -581,7 +581,7 @@ int vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		.view           = vh->view,
 		.rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index)};
 
-	    cancel = (*vh->on_event)(tevent);
+	    (*vh->on_event)(tevent);
 	}
 
 	if (event.ev.keycode == XKB_KEY_Return)
@@ -596,7 +596,7 @@ int vh_table_evnt_event(vh_tbl_evnt_event_t event)
 		.rowview        = vh_tbl_body_item_for_index(vh->body_v, vh->selected_index),
 	    };
 
-	    cancel = (*vh->on_event)(tevent);
+	    (*vh->on_event)(tevent);
 	}
     }
     else if (event.id == VH_TBL_EVENT_KEY_UP)
