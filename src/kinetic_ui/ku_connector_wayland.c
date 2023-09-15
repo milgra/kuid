@@ -1863,8 +1863,8 @@ void ku_wayland_init(
 
 		if (fds[3].revents & POLLIN) /* stdin events */
 		{
-		    char buffer[3] = {0};
-		    while (fgets(buffer, 3, stdin))
+		    char buffer[2] = {0};
+		    while (fgets(buffer, 2, stdin))
 		    {
 			ku_event_t event = init_event();
 			event.type       = KU_EVENT_STDIN;
@@ -1872,7 +1872,7 @@ void ku_wayland_init(
 			event.text[1]    = '\0';
 
 			(*wlc.update)(event);
-			break;
+			if (buffer[0] == '\n') break;
 		    }
 		}
 	    }
