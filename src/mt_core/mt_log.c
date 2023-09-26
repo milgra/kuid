@@ -147,6 +147,7 @@ void mt_log(const mt_log_importance importance, const char* file, const int line
     }
 
     fprintf(stdout, "\n");
+    fflush(stdout);
 }
 
 void mt_log_set_level(const mt_log_importance importance)

@@ -271,12 +271,15 @@ ku_rect_t ku_window_update(ku_window_t* win, uint32_t time)
     {
 	ku_view_t* view = win->views->data[i];
 
-	if (view->texture.ready == 0)
+	if (view->tex_gen && view->texture.ready == 0)
+	{
 	    ku_view_gen_texture(view);
+	}
 
-	if (view->texture.changed)
+	if (view->tex_gen && view->texture.changed)
 	{
 	    result = ku_rect_add(result, view->frame.global);
+	    /* reset texture.changed flag in the gl/soft renderer */
 	    /* view->texture.changed = 0; */
 	}
 	else if (view->frame.dim_changed)

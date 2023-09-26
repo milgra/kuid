@@ -50,6 +50,8 @@ void ku_renderer_software_render(mt_vector_t* views, ku_bitmap_t* bitmap, ku_rec
 
 	if (view->texture.bitmap)
 	{
+	    view->texture.changed = 0;
+
 	    ku_rect_t rect = view->frame.global;
 
 	    bmr_t dstmsk = ku_bitmap_is(

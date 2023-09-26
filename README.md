@@ -26,6 +26,7 @@ Always assert after GETV to make sure html really contains the wanted view.
 
 Roadmap :
 
+- drag between slider bad dirty rect
 - error handling in mt core functions ( add, del, rel, expand, etc should return with int)
 - example projects, test app
 - increase fault tolerance of css and html parser

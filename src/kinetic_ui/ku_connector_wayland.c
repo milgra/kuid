@@ -388,7 +388,7 @@ void ku_wayland_create_buffer(wl_window_t* info, int width, int height)
     info->bitmap.data = info->shm_data;
 
     struct wl_shm_pool* pool   = wl_shm_create_pool(wlc.shm, fd, size);
-    struct wl_buffer*   buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
+    struct wl_buffer*   buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, WL_SHM_FORMAT_ABGR8888);
 
     wl_shm_pool_destroy(pool);
 
@@ -1774,6 +1774,8 @@ void ku_wayland_init(
 
     clock_gettime(CLOCK_REALTIME, &wlc.time_start);
 
+    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+
     if (wlc.display)
     {
 	wlc.time_event_timer_fd   = timerfd_create(CLOCK_MONOTONIC, 0);
@@ -1864,15 +1866,15 @@ void ku_wayland_init(
 		if (fds[3].revents & POLLIN) /* stdin events */
 		{
 		    char buffer[2] = {0};
-		    while (fgets(buffer, 2, stdin))
+		    char c;
+		    while ((c = getc(stdin)) != EOF)
 		    {
 			ku_event_t event = init_event();
 			event.type       = KU_EVENT_STDIN;
-			event.text[0]    = buffer[0];
+			event.text[0]    = c;
 			event.text[1]    = '\0';
 
 			(*wlc.update)(event);
-			if (buffer[0] == '\n') break;
 		    }
 		}
 	    }
