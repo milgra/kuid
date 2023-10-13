@@ -31,6 +31,9 @@ void init(wl_event_t ev)
     monitor = ev.monitors[0];
 
     mt_log_debug("NAME %s", monitor->name);
+
+    printf("event init\n");
+    fflush(stdout);
 }
 
 int button_event(vh_button_event_t ev)
@@ -43,6 +46,7 @@ int button_event(vh_button_event_t ev)
 void slider_event(vh_slider_event_t ev)
 {
     printf("event slider div %s ratio %.6f normalized %i\n", ev.view->id, ev.ratio, (int) (ev.ratio * 100.0));
+
     fflush(stdout);
 }
 
