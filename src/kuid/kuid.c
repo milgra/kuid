@@ -7,6 +7,7 @@
 #include "mt_map.c"
 #include "mt_path.c"
 #include "mt_string.c"
+#include "tg_text.c"
 #include "vh_button.c"
 #include "vh_slider.c"
 
@@ -19,14 +20,16 @@ uint32_t             color = 0xFF00FFFF;
 
 ku_window_t* kuwindow  = NULL;
 ku_rect_t    dirtyrect = {0};
+ku_view_t*   view_base;
 
-char* img_path;
-char* css_path;
-char* html_path;
+int width  = 100;
+int height = 100;
 
 void init(wl_event_t ev)
 {
     mt_log_debug("INIT, EVENT : %i", ev.id);
+
+    ku_text_init();
 
     monitor = ev.monitors[0];
 
@@ -38,14 +41,14 @@ void init(wl_event_t ev)
 
 int button_event(vh_button_event_t ev)
 {
-    printf("event button div %s state %i\n", ev.view->id, ev.vh->state);
+    printf("event state div %s value %i\n", ev.view->id, ev.vh->state);
     fflush(stdout);
 
     return 0;
 }
 void slider_event(vh_slider_event_t ev)
 {
-    printf("event slider div %s ratio %.6f normalized %i\n", ev.view->id, ev.ratio, (int) (ev.ratio * 100.0));
+    printf("event ratio div %s value %.6f normalized %i\n", ev.view->id, ev.ratio, (int) (ev.ratio * 100.0));
 
     fflush(stdout);
 }
@@ -61,6 +64,8 @@ void update(ku_event_t ev)
     {
 	if (ev.text[0] == '\n')
 	{
+	    mt_log_debug("COMMAND %s", command);
+
 	    if (strlen(command) > 0)
 	    {
 		mt_vector_t* toks  = mt_string_tokenize(command, " ");
@@ -80,8 +85,6 @@ void update(ku_event_t ev)
 
 		    if (strcmp(type, "layer") == 0)
 		    {
-			int   width  = 500;
-			int   height = 300;
 			int   margin = 0;
 			char* anchor = "";
 
@@ -113,21 +116,24 @@ void update(ku_event_t ev)
 
 		    if (strcmp(type, "html") == 0)
 		    {
-			char* url = MGET(pairs, "url");
+			char* src = MGET(pairs, "src");
+
+			char* html_path = mt_path_new_normalize(src); // REL 10
+			char* html_root = mt_path_new_remove_last_component(html_path);
 
 			mt_vector_t* view_list = VNEW();
+			mt_vector_t* css_list  = VNEW();
 
-			ku_gen_html_parse(html_path, view_list);                  // create view structure
-			ku_gen_css_apply(view_list, css_path, img_path);          // apply css
+			ku_gen_html_parse(html_path, view_list, css_list);        // create view structure
+			ku_gen_css_apply(view_list, css_list, html_root);         // apply css
 			ku_gen_type_apply(view_list, button_event, slider_event); // generate built-in types
+			// remove link tag, TODO we shouldn't do this here
+			mt_vector_rem_index(view_list, 0);
 
-			ku_view_t* view_base = mt_vector_head(view_list);
-
-			ku_view_set_frame(view_base, (ku_rect_t){0.0, 0.0, (float) 500, (float) 300});
-
-			kuwindow = ku_window_create(500, 300, 1); // kineti ui view holder window
-
+			view_base = mt_vector_head(view_list);
+			kuwindow  = ku_window_create(width, height, 1); // kineti ui view holder window
 			ku_window_add(kuwindow, view_base);
+			ku_window_layout(kuwindow);
 			ku_view_describe(view_base, 0);
 		    }
 		}
@@ -135,14 +141,30 @@ void update(ku_event_t ev)
 		{
 		    char* type = MGET(pairs, "set");
 
-		    if (strcmp(type, "slider") == 0)
+		    if (strcmp(type, "ratio") == 0)
+		    {
+			char* div   = MGET(pairs, "div");
+			char* ratio = MGET(pairs, "value");
+
+			ku_view_t* view = ku_view_get_subview(view_base, div);
+			vh_slider_set(view, atof(ratio));
+		    }
+
+		    if (strcmp(type, "text") == 0)
+		    {
+			char* div  = MGET(pairs, "div");
+			char* text = MGET(pairs, "value");
+
+			ku_view_t* view = ku_view_get_subview(view_base, div);
+			tg_text_set1(view, text);
+		    }
+
+		    if (strcmp(type, "button") == 0)
 		    {
 		    }
 		}
 
 		REL(pairs);
-
-		mt_log_debug("COMMAND %s", command);
 
 		command = mt_string_reset(command);
 	    }
@@ -157,13 +179,14 @@ void update(ku_event_t ev)
 	shown = 1;
     }
 
+    if (kuwindow) ku_window_event(kuwindow, ev);
+
     if (shown && wlwindow->frame_cb == NULL)
     {
 	if (wlwindow)
 	{
 	    if (kuwindow)
 	    {
-		ku_window_event(kuwindow, ev);
 
 		ku_rect_t dirty = ku_window_update(kuwindow, 0);
 
@@ -238,12 +261,6 @@ int main(int argc, char* argv[])
 
     if (res == NULL)
 	mt_log_error("getcwd error");
-
-    char* wrk_path = mt_path_new_normalize(cwd);
-
-    css_path  = mt_path_new_append(wrk_path, "example/html/main.css");  // REL 9
-    html_path = mt_path_new_append(wrk_path, "example/html/main.html"); // REL 10
-    img_path  = mt_path_new_append(wrk_path, "example/img/");           // REL 9
 
     srand((unsigned int) time(NULL));
 

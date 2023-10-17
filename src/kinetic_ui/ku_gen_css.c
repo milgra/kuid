@@ -4,21 +4,22 @@
 #include "ku_view.c"
 #include "mt_vector.c"
 
-void ku_gen_css_apply(mt_vector_t* views, char* csspath, char* imgpath);
+void ku_gen_css_apply(mt_vector_t* views, mt_vector_t* csslist, char* htmlpath);
 
 #endif
 
 #if __INCLUDE_LEVEL__ == 0
 
 #include <limits.h>
-#ifdef __linux__ 
-#include <linux/limits.h>
+#ifdef __linux__
+    #include <linux/limits.h>
 #endif
 
 #include "ku_css.c"
 #include "mt_log.c"
+#include "mt_path.c"
 
-void ku_gen_css_apply_style(ku_view_t* view, mt_map_t* style, char* imgpath)
+void ku_gen_css_apply_style(ku_view_t* view, mt_map_t* style, char* htmlpath)
 {
     mt_vector_t* keys = VNEW(); // REL 0
     mt_map_keys(style, keys);
@@ -39,7 +40,7 @@ void ku_gen_css_apply_style(ku_view_t* view, mt_map_t* style, char* imgpath)
 	    {
 		char* url = CAL(sizeof(char) * strlen(val), NULL, mt_string_describe); // REL 0
 		memcpy(url, val + 5, strlen(val) - 7);
-		char* imagepath = mt_string_new_format(PATH_MAX, "%s/%s", imgpath, url);
+		char* imagepath = mt_string_new_format(PATH_MAX, "%s/%s", htmlpath, url);
 
 		memcpy(view->style.background_image, imagepath, strlen(imagepath));
 		REL(url); // REL 0
@@ -289,8 +290,11 @@ void ku_gen_css_apply_style(ku_view_t* view, mt_map_t* style, char* imgpath)
     REL(keys);
 }
 
-void ku_gen_css_apply(mt_vector_t* views, char* csspath, char* imgpath)
+void ku_gen_css_apply(mt_vector_t* views, mt_vector_t* css_list, char* htmlpath)
 {
+    char* cssname = css_list->data[0];
+    char* csspath = mt_path_new_append(htmlpath, cssname);
+
     mt_map_t* styles = ku_css_new(csspath);
     mt_map_t* style;
 
@@ -305,7 +309,7 @@ void ku_gen_css_apply(mt_vector_t* views, char* csspath, char* imgpath)
 	style = MGET(styles, cssid);
 	if (style)
 	{
-	    ku_gen_css_apply_style(view, style, imgpath);
+	    ku_gen_css_apply_style(view, style, htmlpath);
 	}
 
 	if (view->class)
@@ -325,7 +329,7 @@ void ku_gen_css_apply(mt_vector_t* views, char* csspath, char* imgpath)
 		// mt_log_debug("applying class %s to %s", cls, view->id);
 		if (style)
 		{
-		    ku_gen_css_apply_style(view, style, imgpath);
+		    ku_gen_css_apply_style(view, style, htmlpath);
 		}
 	    } while ((token = strtok(NULL, " ")));
 	}

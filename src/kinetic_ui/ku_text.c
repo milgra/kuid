@@ -85,6 +85,7 @@ void ku_text_describe_glyphs(glyph_t* glyphs, int count);
 #if __INCLUDE_LEVEL__ == 0
 
 #include "ku_draw.c"
+#include "mt_log.c"
 #include "mt_map.c"
 #include "mt_wrapper.c"
 #include <stdio.h>
@@ -142,6 +143,7 @@ void ku_text_destroy()
 void ku_text_font_load(char* path)
 {
     assert(path != NULL);
+    if (txt_ft.fonts == NULL) mt_log_error("ku_text is not inited, please use ku_text_init and ku_text_destroy");
     assert(txt_ft.fonts != NULL);
 
     FT_Library library;

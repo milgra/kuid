@@ -3,7 +3,7 @@
 
 #include "mt_vector.c"
 
-void ku_gen_html_parse(char* htmlpath, mt_vector_t* views);
+void ku_gen_html_parse(char* htmlpath, mt_vector_t* views, mt_vector_t* csspaths);
 
 #endif
 
@@ -14,7 +14,7 @@ void ku_gen_html_parse(char* htmlpath, mt_vector_t* views);
 #include "mt_log.c"
 #include "mt_string_ext.c"
 
-void ku_gen_html_parse(char* htmlpath, mt_vector_t* views)
+void ku_gen_html_parse(char* htmlpath, mt_vector_t* views, mt_vector_t* csspaths)
 {
     char* html = mt_string_new_file(htmlpath); // REL 0
 
@@ -26,6 +26,10 @@ void ku_gen_html_parse(char* htmlpath, mt_vector_t* views)
 	while ((*tags).len > 0)
 	{
 	    tag_t t = *tags;
+
+	    char* tagt = CAL(sizeof(char) * t.tag.len + 1, NULL, mt_string_describe); // REL 0
+	    memcpy(tagt, html + t.tag.pos + 1, t.tag.len);
+
 	    if (t.id.len > 0)
 	    {
 		// extract id
@@ -67,6 +71,15 @@ void ku_gen_html_parse(char* htmlpath, mt_vector_t* views)
 		    REL(text); // REL 2
 		}
 
+		if (t.href.len > 0)
+		{
+		    // store href
+		    char* href = CAL(sizeof(char) * t.href.len + 1, NULL, mt_string_describe); // REL 2
+		    memcpy(href, html + t.href.pos + 1, t.href.len);
+		    ku_view_set_type(view, href);
+		    REL(href); // REL 2
+		}
+
 		if (t.script.len > 0)
 		{
 		    // store html stype
@@ -81,6 +94,27 @@ void ku_gen_html_parse(char* htmlpath, mt_vector_t* views)
 		REL(id);   // REL 0
 		REL(view); // REL 1
 	    }
+	    else if (strstr(tagt, "link"))
+	    {
+		static int divcnt = 0;
+		char*      divid  = mt_string_new_format(10, "link%i", divcnt++);
+		// idless view, probably </div>
+		ku_view_t* view = ku_view_new(divid, (ku_rect_t){0});
+		mt_log_debug("adding subivew %s\n", view->id);
+
+		if (t.href.len > 0)
+		{
+		    // store href
+		    char* href = CAL(sizeof(char) * t.href.len + 1, NULL, mt_string_describe); // REL 2
+		    memcpy(href, html + t.href.pos + 1, t.href.len);
+		    VADD(csspaths, href);
+		    REL(href); // REL 2
+		}
+
+		VADD(views, view);
+		REL(view);
+		REL(divid);
+	    }
 	    else
 	    {
 		static int divcnt = 0;
@@ -91,6 +125,9 @@ void ku_gen_html_parse(char* htmlpath, mt_vector_t* views)
 		REL(view);
 		REL(divid);
 	    }
+
+	    REL(tagt);
+
 	    tags += 1;
 	}
 

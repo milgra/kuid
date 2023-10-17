@@ -23,7 +23,9 @@ typedef struct _tag_t
     uint32_t level;
     uint32_t parent;
 
+    html_range_t tag;
     html_range_t id;
+    html_range_t href;
     html_range_t type;
     html_range_t text;
     html_range_t class;
@@ -120,7 +122,7 @@ void ku_html_extract_tags(char* html, tag_t* tags)
 	    {
 		tags[t].len = i - tags[t].pos + 1;
 		in_tag      = 0;
-		// printf("storing %i tag %.*s\n", t, tags[t].len, html + tags[t].pos);
+		/* printf("storing %i tag %.*s\n", t, tags[t].len, html + tags[t].pos); */
 		t++;
 	    }
 	}
@@ -179,16 +181,20 @@ void ku_html_analyze_tags(char* html, tag_t* tags, uint32_t count)
 	tags[i].level = l++;
 
 	int ii = i;
-	while (ii-- > 0)
+	while (ii > 0)
 	{
 	    if (tags[ii].level == tags[i].level - 1)
 	    {
 		tags[i].parent = ii;
 		break;
 	    }
+
+	    ii--;
 	}
 
+	tags[i].tag    = ((html_range_t){.pos = tags[i].pos, .len = 4});
 	tags[i].id     = ku_html_extract_value(tags[i], "id=\"", html);
+	tags[i].href   = ku_html_extract_value(tags[i], "href=\"", html);
 	tags[i].type   = ku_html_extract_value(tags[i], "type=\"", html);
 	tags[i].text   = ku_html_extract_value(tags[i], "text=\"", html);
 	tags[i].class  = ku_html_extract_value(tags[i], "class=\"", html);
