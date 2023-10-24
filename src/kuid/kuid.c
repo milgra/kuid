@@ -13,10 +13,11 @@
 
 char*                command;
 struct monitor_info* monitor;
-wl_window_t*         wlwindow;
-int                  shown = 0;
-int                  drawn = 0;
-uint32_t             color = 0xFF00FFFF;
+wl_window_t*         wlwindow = NULL;
+int                  shown    = 0;
+int                  drawn    = 0;
+uint32_t             color    = 0xFF00FFFF;
+int                  force    = 0;
 
 ku_window_t* kuwindow  = NULL;
 ku_rect_t    dirtyrect = {0};
@@ -24,6 +25,9 @@ ku_view_t*   view_base;
 
 int width  = 100;
 int height = 100;
+
+int   margin = 0;
+char* anchor = "";
 
 void init(wl_event_t ev)
 {
@@ -46,6 +50,7 @@ int button_event(vh_button_event_t ev)
 
     return 0;
 }
+
 void slider_event(vh_slider_event_t ev)
 {
     printf("event ratio div %s value %.6f normalized %i\n", ev.view->id, ev.ratio, (int) (ev.ratio * 100.0));
@@ -79,15 +84,45 @@ void update(ku_event_t ev)
 		}
 		REL(toks);
 
-		if (mt_map_get(pairs, "create") != NULL)
+		if (mt_map_get(pairs, "exit") != NULL)
+		{
+		    ku_wayland_exit();
+		}
+		else if (mt_map_get(pairs, "toggle") != NULL)
+		{
+		    char* type = MGET(pairs, "toggle");
+
+		    if (strcmp(type, "visibility") == 0)
+		    {
+			if (wlwindow)
+			{
+			    ku_wayland_delete_window(wlwindow);
+			    wlwindow = NULL;
+			    shown    = 0;
+			}
+			else
+			{
+			    wlwindow = ku_wayland_create_generic_layer(
+				monitor,
+				width,
+				height,
+				margin,
+				anchor);
+
+			    ku_wayland_show_window(wlwindow);
+
+			    force = 1; // force re-draw of kuwindow after wlwindow appeared
+			    printf("event update\n");
+			    fflush(stdout);
+			}
+		    }
+		}
+		else if (mt_map_get(pairs, "create") != NULL)
 		{
 		    char* type = MGET(pairs, "create");
 
 		    if (strcmp(type, "layer") == 0)
 		    {
-			int   margin = 0;
-			char* anchor = "";
-
 			char* width_s  = MGET(pairs, "width");
 			char* height_s = MGET(pairs, "height");
 			char* margin_s = MGET(pairs, "margin");
@@ -97,17 +132,8 @@ void update(ku_event_t ev)
 			if (color_s) color = strtol(color_s, NULL, 16);
 			if (width_s) width = atoi(width_s);
 			if (height_s) height = atoi(height_s);
-			if (anchor_s) anchor = anchor_s;
+			if (anchor_s) anchor = STRNC(anchor_s);
 			if (margin_s) margin = atoi(margin_s);
-
-			wlwindow = ku_wayland_create_generic_layer(
-			    monitor,
-			    width,
-			    height,
-			    margin,
-			    anchor);
-
-			ku_wayland_show_window(wlwindow);
 		    }
 		}
 		else if (mt_map_get(pairs, "load") != NULL)
@@ -187,8 +213,13 @@ void update(ku_event_t ev)
 	{
 	    if (kuwindow)
 	    {
-
 		ku_rect_t dirty = ku_window_update(kuwindow, 0);
+		if (force)
+		{
+		    dirty.w = kuwindow->width;
+		    dirty.h = kuwindow->height;
+		    force   = 0;
+		}
 
 		if (dirty.w > 0 && dirty.h > 0)
 		{

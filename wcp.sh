@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-PIPE_IN=$(mktemp -u)
+PIPE_IN="/tmp/wcp"
+
+rm -f $PIPE_IN
 mkfifo $PIPE_IN
 exec 3<>$PIPE_IN
-rm $PIPE_IN
 
 ./build/kuid -v <&3 | while IFS= read -r line; do
     echo $line
@@ -14,8 +15,19 @@ rm $PIPE_IN
 	if [ ${words[1]} = "init" ]
 	then
 	    # init layer
-	    echo "create layer width 300 height 190" >&3
-	    echo "load html src example/html/main.html" >&3
+	    echo "create layer width 300 height 225 anchor rt" >&3
+	    echo "load html src example/wcp/main.html" >&3
+
+	    # set volume
+	    vol=$(pulsemixer --get-volume | awk '{print $1;}')
+	    volrat=$(echo "scale=2 ; $vol / 100" | bc)
+	    echo "set ratio div volslider value $volrat" >&3
+
+	    # set brightness
+	    act=$(brightnessctl g)
+	    max=$(brightnessctl m)
+	    lcdrat=$(echo "scale=2 ; $act / $max" | bc)
+	    echo "set ratio div lcdslider value $lcdrat" >&3
 
 	    # set bluetooth device's name
 	    device=$(bluetoothctl info | sed -n 2p | awk '{for(i=2;i<=NF;i++) printf $i" "}')
@@ -29,6 +41,11 @@ rm $PIPE_IN
 	    network=$(nmcli con show | awk 'NR==2 {print $1}')
 	    echo "set text div wifilabel value $network" >&3
 
+	    echo "set text div datelabel value $(date +%H:%M)" >&3
+	    echo "set text div langlabel value EN_US" >&3
+
+	elif [ ${words[1]} = "update" ]
+	then
 	    # set volume
 	    vol=$(pulsemixer --get-volume | awk '{print $1;}')
 	    volrat=$(echo "scale=2 ; $vol / 100" | bc)
@@ -39,6 +56,21 @@ rm $PIPE_IN
 	    max=$(brightnessctl m)
 	    lcdrat=$(echo "scale=2 ; $act / $max" | bc)
 	    echo "set ratio div lcdslider value $lcdrat" >&3
+
+	    # set bluetooth device's name
+	    device=$(bluetoothctl info | sed -n 2p | awk '{for(i=2;i<=NF;i++) printf $i" "}')
+	    if [ ${#device} -eq 0 ]
+	    then
+		device="No_device_connected"
+	    fi
+	    echo "set text div btoothlabel value $device" >&3
+
+	    # set wifi network name
+	    network=$(nmcli con show | awk 'NR==2 {print $1}')
+	    echo "set text div wifilabel value $network" >&3
+
+	    echo "set text div datelabel value $(date +%H:%M)" >&3
+	    echo "set text div langlabel value EN_US" >&3
 
 	# slider events
 	elif [ ${words[1]} == "ratio" ]
