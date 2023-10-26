@@ -15,7 +15,7 @@ exec 3<>$PIPE_IN
 	if [ ${words[1]} = "init" ]
 	then
 	    # init layer
-	    echo "create layer width 300 height 225 anchor rt" >&3
+	    echo "create layer width 300 height 258 anchor rt margin 10" >&3
 	    echo "load html src example/wcp/main.html" >&3
 
 	    # set volume
@@ -41,8 +41,9 @@ exec 3<>$PIPE_IN
 	    network=$(nmcli con show | awk 'NR==2 {print $1}')
 	    echo "set text div wifilabel value $network" >&3
 
-	    echo "set text div datelabel value $(date +%H:%M)" >&3
-	    echo "set text div langlabel value EN_US" >&3
+	    echo "set text div printerlabel value No_printer" >&3
+	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name')
+	    echo "set text div keyboardlabel value ${layout// /_}" >&3
 
 	elif [ ${words[1]} = "update" ]
 	then
@@ -69,8 +70,9 @@ exec 3<>$PIPE_IN
 	    network=$(nmcli con show | awk 'NR==2 {print $1}')
 	    echo "set text div wifilabel value $network" >&3
 
-	    echo "set text div datelabel value $(date +%H:%M)" >&3
-	    echo "set text div langlabel value EN_US" >&3
+	    echo "set text div printerlabel value No_printer" >&3
+	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name')
+	    echo "set text div keyboardlabel value ${layout// /_}" >&3
 
 	# slider events
 	elif [ ${words[1]} == "ratio" ]

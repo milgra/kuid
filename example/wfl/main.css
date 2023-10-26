@@ -95,10 +95,10 @@
     margin: 10px;
 }
 
-#muteicon {
-    width: 30px;
-    height: 30px;
-    background-image: url("speaker.png");
+#itemicon {
+    width: 20px;
+    height: 20px;
+    background-image: url("vpn.png");
     blocks: no;
 }
 

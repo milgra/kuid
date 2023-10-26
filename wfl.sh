@@ -15,17 +15,25 @@ exec 3<>$PIPE_IN
 	if [ ${words[1]} = "init" ]
 	then
 	    # init layer
-	    echo "create layer width 300 height 295 anchor rt" >&3
-	    echo "load html src example/wal/main.html" >&3
+	    echo "create layer width 300 height 295 anchor rt margin 10" >&3
+	    echo "load html src example/wfl/main.html" >&3
 
 	    echo "set text div item0label value GlobalProtect" >&3
+	    echo "set text div item0number value 0" >&3
 	    echo "set text div item1label value Citrix" >&3
+	    echo "set text div item1number value 1" >&3
 	    echo "set text div item2label value Terminal" >&3
+	    echo "set text div item2number value 2" >&3
 	    echo "set text div item3label value Nautilus" >&3
+	    echo "set text div item3number value 3" >&3
 	    echo "set text div item4label value Chromium" >&3
+	    echo "set text div item4number value 4" >&3
 	    echo "set text div item5label value LibreOffice" >&3
+	    echo "set text div item5number value 5" >&3
 	    echo "set text div item6label value MMFM" >&3
+	    echo "set text div item6number value 6" >&3
 	    echo "set text div item7label value VMP" >&3
+	    echo "set text div item7number value 7" >&3
 
 	# button events
 	elif [ ${words[1]} == "state" ]

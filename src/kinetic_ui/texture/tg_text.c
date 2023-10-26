@@ -79,6 +79,7 @@ void tg_text_del(void* p)
 {
     tg_text_t* gen = p;
     if (gen->text) REL(gen->text);
+    gen->text = NULL;
 }
 
 void tg_text_desc(void* p, int level)
@@ -105,6 +106,7 @@ void tg_text_set1(ku_view_t* view, char* text)
     tg_text_t* gen = view->tex_gen_data;
 
     if (gen->text) REL(gen->text);
+    gen->text = NULL;
     if (text) gen->text = mt_string_new_cstring(text);
 
     view->texture.ready = 0;
@@ -115,6 +117,7 @@ void tg_text_set(ku_view_t* view, char* text, textstyle_t style)
     tg_text_t* gen = view->tex_gen_data;
 
     if (gen->text) REL(gen->text);
+    gen->text = NULL;
     if (text) gen->text = mt_string_new_cstring(text);
 
     gen->style = style;

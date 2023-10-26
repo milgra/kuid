@@ -162,3 +162,19 @@
     background-image: url("reboot.png");
     blocks: no;
 }
+
+#printericon {
+    margin: auto;
+    width: 30px;
+    height: 30px;
+    background-image: url("printer.png");
+    blocks: no;
+}
+
+#keyboardicon {
+    margin: auto;
+    width: 30px;
+    height: 30px;
+    background-image: url("keyboard.png");
+    blocks: no;
+}
