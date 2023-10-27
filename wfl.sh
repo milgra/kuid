@@ -15,7 +15,7 @@ exec 3<>$PIPE_IN
 	if [ ${words[1]} = "init" ]
 	then
 	    # init layer
-	    echo "create layer width 300 height 295 anchor rt margin 10" >&3
+	    echo "create layer width 300 height 295 anchor lt margin 10" >&3
 	    echo "load html src example/wfl/main.html" >&3
 
 	    echo "set text div item0label value GlobalProtect" >&3

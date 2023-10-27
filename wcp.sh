@@ -41,8 +41,9 @@ exec 3<>$PIPE_IN
 	    network=$(nmcli con show | awk 'NR==2 {print $1}')
 	    echo "set text div wifilabel value $network" >&3
 
-	    echo "set text div printerlabel value No_printer" >&3
-	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name')
+	    printer=$(lpstat -e)
+	    echo "set text div printerlabel value ${printer// /_}" >&3
+	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name' | sed 's/^.//;s/.$//')
 	    echo "set text div keyboardlabel value ${layout// /_}" >&3
 
 	elif [ ${words[1]} = "update" ]
@@ -70,8 +71,9 @@ exec 3<>$PIPE_IN
 	    network=$(nmcli con show | awk 'NR==2 {print $1}')
 	    echo "set text div wifilabel value $network" >&3
 
-	    echo "set text div printerlabel value No_printer" >&3
-	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name')
+	    printer=$(lpstat -e)
+	    echo "set text div printerlabel value ${printer// /_}" >&3
+	    layout=$(swaymsg -t get_inputs | jq '.[0].xkb_active_layout_name' | sed 's/^.//;s/.$//')
 	    echo "set text div keyboardlabel value ${layout// /_}" >&3
 
 	# slider events
