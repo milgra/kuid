@@ -59,8 +59,8 @@ or use the AUR
 Then run these commands:
 
 ```
-git clone git@github.com:milgra/kineticui.git
-cd kineticui
+git clone git@github.com:milgra/kuid.git
+cd kuid
 meson build --buildtype=release
 ninja -C build
 sudo ninja -C build install
@@ -88,16 +88,17 @@ GPLv3, see [LICENSE](/LICENSE).
 
 ## Roadmap ##
 
-- drag between slider bad dirty rect
-- error handling in mt core functions ( add, del, rel, expand, etc should return with int)
-- example projects, test app
-- increase fault tolerance of css and html parser
-- increase standards compatibility of css and html (type=button, blocks=true non standard stuff)
-- figure out how to use dirty rects with double buffering in ku_renderer_egl
-- update software renderer, cut out dirty rect, implement image zoom
-- test dirty rect handling
-- predictable screenshot when video playing
-- use hold gesture during scrolling
-- solve last column resize problem
-- select/copy/paste in textfields
-- vh_textinput should seamlessly switch between texture paragraph and glpyh-based paragraph
+- drag between slider
+- bad dirty rect  
+- error handling in mt core functions ( add, del, rel, expand, etc should return with int)  
+- example projects, test app  
+- increase fault tolerance of css and html parser  
+- increase standards compatibility of css and html (type=button, blocks=true non standard stuff)  
+- figure out how to use dirty rects with double buffering in ku_renderer_egl  
+- update software renderer, cut out dirty rect, implement image zoom  
+- test dirty rect handling  
+- predictable screenshot when video playing  
+- use hold gesture during scrolling  
+- solve last column resize problem  
+- select/copy/paste in textfields  
+- vh_textinput should seamlessly switch between texture paragraph and glpyh-based paragraph  
