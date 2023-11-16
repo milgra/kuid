@@ -1,35 +1,17 @@
-# KineticUI and KineticUI Daemon
+# KineticUI Daemon
 
-A modern, minimal ui renderer with html/css based stylimg written in headerless C.
+A modern, minimal ui renderer and daemon with html/css based stylimg and text based control protocol.
 
 [![alt text](screenshot.png)](https://www.youtube.com/watch?v=5_f0dCKl6Uo)
 
-KineticUI Features :
-- MacOS like smooth kinetic animations
-- font animatioms
-- deterministic session record and replay for automated testing
-- gpu or cpu based alpha nblendig
-- wayland connector with window and layer support
-
-KineticUI daemon Features :
 - text based protocol
 - commands accepted on STDIN, events dispatched on STDOUT
 - can be used with any kind of script or programming language
-
-KineticUI Usage :
-
-KineticUI is under heavy development, check out projects using KineticUI to see how to use it :
-
-https://github.com/milgra/mmfm  
-https://github.com/milgra/vmp  
-https://github.com/milgra/sov  
-
-KineticUI Daemon usage :
-
-check out the controlling script of wcp and wfl
-
-https://github.com/milgra/wcp
-https://github.com/milgra/wfl
+- MacOS like smooth kinetic animations
+- font animatioms
+- deterministic session record and replay for automated testing
+- gpu or cpu based alpha blendig
+- wayland connector with window and layer support
 
 ## Installation
 
@@ -70,6 +52,20 @@ sudo ninja -C build install
 
 Launch kuid in a terminal and type commands into its standard input, currently available commands are :
 
+KineticUI Usage :
+
+KineticUI is under heavy development, check out projects using KineticUI to see how to use it :
+
+https://github.com/milgra/mmfm  
+https://github.com/milgra/vmp  
+https://github.com/milgra/sov  
+
+KineticUI Daemon usage :
+
+check out the controlling script of wcp and wfl
+
+https://github.com/milgra/wcp
+https://github.com/milgra/wfl
 
 ## Technical Info ##
 
