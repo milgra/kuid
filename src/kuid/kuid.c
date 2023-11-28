@@ -172,8 +172,11 @@ void update(ku_event_t ev)
 			char* div   = MGET(pairs, "div");
 			char* ratio = MGET(pairs, "value");
 
-			ku_view_t* view = ku_view_get_subview(view_base, div);
-			vh_slider_set(view, atof(ratio));
+			if (div && ratio)
+			{
+			    ku_view_t* view = ku_view_get_subview(view_base, div);
+			    vh_slider_set(view, atof(ratio));
+			}
 		    }
 
 		    if (strcmp(type, "text") == 0)
@@ -181,8 +184,11 @@ void update(ku_event_t ev)
 			char* div  = MGET(pairs, "div");
 			char* text = MGET(pairs, "value");
 
-			ku_view_t* view = ku_view_get_subview(view_base, div);
-			tg_text_set1(view, text);
+			if (div && text)
+			{
+			    ku_view_t* view = ku_view_get_subview(view_base, div);
+			    tg_text_set1(view, text);
+			}
 		    }
 
 		    if (strcmp(type, "button") == 0)
@@ -306,4 +312,7 @@ int main(int argc, char* argv[])
 #ifdef MT_MEMORY_DEBUG
     mt_memory_stats();
 #endif
+
+    printf("FINISHEDDDD");
+    fflush(stdout);
 }
