@@ -12,6 +12,7 @@ void ku_renderer_soft_screenshot(ku_bitmap_t* bitmap, char* path);
 
 #if __INCLUDE_LEVEL__ == 0
 
+#include "ku_draw.c"
 #include "ku_png.c"
 #include "ku_view.c"
 #include "mt_time.c"
@@ -20,7 +21,7 @@ void ku_renderer_software_render(mt_vector_t* views, ku_bitmap_t* bitmap, ku_rec
 {
     /* cut out dirty rect */
 
-    /* ku_bitmap_cut(&mmfm.window->bitmap, (int) sum.x, (int) sum.y, (int) sum.w, (int) sum.h); */
+    ku_draw_rect(bitmap, (int) dirty.x, (int) dirty.y, (int) dirty.w, (int) dirty.h, 0, 0);
 
     /* draw dirty rect for debugging */
 
